@@ -1,6 +1,6 @@
 # Wanda in viaggio
 
-Il diario delle nostre uscite con il Boxlife 540: viaggi, tappe sulla mappa, giorno per giorno, racconto e foto.
+Il diario delle nostre uscite con il Knaus BoxLife 540: viaggi, tappe sulla mappa, giorno per giorno, racconto e foto.
 
 - **Sito**: GitHub Pages (questo repository)
 - **Dati e foto**: Supabase, visibili solo alle email autorizzate
