@@ -450,8 +450,15 @@ details.more summary{cursor:pointer;font-weight:600;font-size:14px;padding:10px 
 details.more[open] summary{margin-bottom:6px}
 .upnote{font-size:12px;color:var(--muted)}
 .fld.nights input{max-width:140px}
-.codebox{margin-top:18px;padding-top:16px;border-top:1px dashed var(--line)}
-.codebox p{margin:0 0 10px;font-size:14px}
+.loginform{max-width:380px}
+.pwrow{position:relative}
+.pwrow input{padding-right:48px}
+.pweye{position:absolute;right:4px;top:50%;transform:translateY(-50%);width:40px;height:40px;border:0;background:none;border-radius:9px;cursor:pointer;color:var(--muted);display:grid;place-items:center}
+.pweye svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.pweye.on{color:var(--accent)}
+.btn.wide{width:100%;min-height:46px;font-size:15px}
+.linkbtn{display:block;margin:14px auto 0;border:0;background:none;color:var(--accent);font-weight:600;font-size:14px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.err.okmsg{color:#24804A}
 .offline{background:#FFF1D1;color:#7A4A00}
 
 @media (max-width:760px){
@@ -484,6 +491,16 @@ details.more[open] summary{margin-bottom:6px}
   .t-long{display:none}.t-short{display:inline}
   .brand{font-size:17px}
 }
+
+/* ===== sfondo e copertine (revisione grafica) ===== */
+html{background:url("data:image/svg+xml,%3Csvg xmlns='http%3A//www.w3.org/2000/svg' width='760' height='760' viewBox='0 0 760 760'%3E%3Cg fill='none' stroke='%231E4B66' stroke-width='1' opacity='.065'%3E%3Cpath transform='translate(200 230.0) rotate(14) scale(0.4 0.31200000000000006)' d='M0-60C30-64 62-46 74-14C84 16 60 50 22 58C-12 66-52 54-70 24C-84-4-64-42-30-56C-20-60-10-60 0-60Z' vector-effect='non-scaling-stroke'/%3E%3Cpath transform='translate(206 226.4) rotate(21) scale(0.85 0.663)' d='M0-60C30-64 62-46 74-14C84 16 60 50 22 58C-12 66-52 54-70 24C-84-4-64-42-30-56C-20-60-10-60 0-60Z' vector-effect='non-scaling-stroke'/%3E%3Cpath transform='translate(212 222.8) rotate(28) scale(1.35 1.0530000000000002)' d='M0-60C30-64 62-46 74-14C84 16 60 50 22 58C-12 66-52 54-70 24C-84-4-64-42-30-56C-20-60-10-60 0-60Z' vector-effect='non-scaling-stroke'/%3E%3Cpath transform='translate(218 219.2) rotate(35) scale(1.9 1.482)' d='M0-60C30-64 62-46 74-14C84 16 60 50 22 58C-12 66-52 54-70 24C-84-4-64-42-30-56C-20-60-10-60 0-60Z' vector-effect='non-scaling-stroke'/%3E%3Cpath transform='translate(224 215.6) rotate(42) scale(2.5 1.9500000000000002)' d='M0-60C30-64 62-46 74-14C84 16 60 50 22 58C-12 66-52 54-70 24C-84-4-64-42-30-56C-20-60-10-60 0-60Z' vector-effect='non-scaling-stroke'/%3E%3Cpath transform='translate(560 540.0) rotate(-28) scale(0.35 0.27299999999999996)' d='M0-60C30-64 62-46 74-14C84 16 60 50 22 58C-12 66-52 54-70 24C-84-4-64-42-30-56C-20-60-10-60 0-60Z' vector-effect='non-scaling-stroke'/%3E%3Cpath transform='translate(555 543.0) rotate(-21) scale(0.8 0.6240000000000001)' d='M0-60C30-64 62-46 74-14C84 16 60 50 22 58C-12 66-52 54-70 24C-84-4-64-42-30-56C-20-60-10-60 0-60Z' vector-effect='non-scaling-stroke'/%3E%3Cpath transform='translate(550 546.0) rotate(-14) scale(1.3 1.014)' d='M0-60C30-64 62-46 74-14C84 16 60 50 22 58C-12 66-52 54-70 24C-84-4-64-42-30-56C-20-60-10-60 0-60Z' vector-effect='non-scaling-stroke'/%3E%3Cpath transform='translate(545 549.0) rotate(-7) scale(1.85 1.443)' d='M0-60C30-64 62-46 74-14C84 16 60 50 22 58C-12 66-52 54-70 24C-84-4-64-42-30-56C-20-60-10-60 0-60Z' vector-effect='non-scaling-stroke'/%3E%3Cpath transform='translate(640 130.0) rotate(38) scale(0.3 0.23399999999999999)' d='M0-60C30-64 62-46 74-14C84 16 60 50 22 58C-12 66-52 54-70 24C-84-4-64-42-30-56C-20-60-10-60 0-60Z' vector-effect='non-scaling-stroke'/%3E%3Cpath transform='translate(644 127.6) rotate(45) scale(0.7 0.5459999999999999)' d='M0-60C30-64 62-46 74-14C84 16 60 50 22 58C-12 66-52 54-70 24C-84-4-64-42-30-56C-20-60-10-60 0-60Z' vector-effect='non-scaling-stroke'/%3E%3Cpath transform='translate(120 630.0) rotate(-6) scale(0.3 0.23399999999999999)' d='M0-60C30-64 62-46 74-14C84 16 60 50 22 58C-12 66-52 54-70 24C-84-4-64-42-30-56C-20-60-10-60 0-60Z' vector-effect='non-scaling-stroke'/%3E%3Cpath transform='translate(123 628.2) rotate(1) scale(0.68 0.5304000000000001)' d='M0-60C30-64 62-46 74-14C84 16 60 50 22 58C-12 66-52 54-70 24C-84-4-64-42-30-56C-20-60-10-60 0-60Z' vector-effect='non-scaling-stroke'/%3E%3Cpath transform='translate(126 626.4) rotate(8) scale(1.08 0.8424)' d='M0-60C30-64 62-46 74-14C84 16 60 50 22 58C-12 66-52 54-70 24C-84-4-64-42-30-56C-20-60-10-60 0-60Z' vector-effect='non-scaling-stroke'/%3E%3C/g%3E%3C/svg%3E") 0 0/760px 760px repeat,linear-gradient(180deg,#EAF6FA 0%,#FFF7EE 55%,#FFF1E4 100%) fixed;background-color:#FFF4EA}
+body{min-height:100vh;background:transparent}
+.scene-hero{background:linear-gradient(180deg,#78BCE3 0%,#BDE0EF 30%,#F7DCC6 60%,#4E9DC4 66%,#1D6A97 100%)}
+.hero.photo,.tbanner.photo,.cover.photo{padding-bottom:120px}
+.hero.photo .stat{background:rgba(10,14,30,.32);border-color:rgba(255,255,255,.28)}
+.hero.photo h2,.tbanner.photo h2,.cover.photo h2{text-shadow:0 2px 18px rgba(0,0,0,.45)}
+.hero.photo .sub,.hero.photo .hnote,.hero.photo .kicker,.tbanner.photo p,.cover.photo p.intro{text-shadow:0 1px 8px rgba(0,0,0,.5)}
+@media (max-width:760px){.hero.photo{padding-bottom:96px}}
 </style>
 </head>
 <body>
@@ -491,32 +508,77 @@ details.more[open] summary{margin-bottom:6px}
 
 <header class="scene-hero">
   <svg class="scene-svg" viewBox="0 0 1440 460" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
-<defs><linearGradient id="seaG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#43B9D6"/><stop offset="1" stop-color="#1A7AA3"/></linearGradient>
-<linearGradient id="mtF" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#93B7D0"/><stop offset="1" stop-color="#B5CFDE"/></linearGradient>
-<linearGradient id="mtN" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4F7F9C"/><stop offset="1" stop-color="#78A3B9"/></linearGradient>
-<radialGradient id="sunG"><stop offset="0" stop-color="#FFF1C2"/><stop offset=".45" stop-color="#FFD98A" stop-opacity=".7"/><stop offset="1" stop-color="#FFD98A" stop-opacity="0"/></radialGradient></defs>
-<circle cx="1120" cy="180" r="170" fill="url(#sunG)"/><circle cx="1120" cy="180" r="62" fill="#FFE39A"/>
-<g fill="#fff" opacity=".85"><path d="M180 120a26 26 0 0 1 50-8a20 20 0 0 1 34 14h-90a16 16 0 0 1 6-6z"/><path d="M820 70a22 22 0 0 1 42-6a17 17 0 0 1 29 12h-78a14 14 0 0 1 7-6z"/></g>
-<g fill="none" stroke="#2C5873" stroke-width="2" stroke-linecap="round"><path d="M700 120q8-8 16 0q8-8 16 0"/><path d="M742 104q6-6 12 0q6-6 12 0"/></g>
-<g transform="translate(650 0)"><path d="M0 318L110 214L180 262L300 132L410 246L480 196L580 282L660 232L790 318Z" fill="url(#mtF)"/>
-<path d="M300 132L272 170L288 164L300 178L316 162L330 168Z" fill="#fff"/><path d="M110 214L92 236L104 232L114 242L126 230L134 234Z" fill="#fff"/><path d="M480 196L462 218L474 214L484 224L494 212L502 216Z" fill="#fff" opacity=".9"/>
-<path d="M0 330L80 262L160 302L250 226L360 318L440 276L540 330Z" fill="url(#mtN)"/>
-<path d="M250 226L230 252L244 248L254 258L264 246L274 250Z" fill="#fff" opacity=".9"/>
-</g><path d="M0 318L90 296L180 306L260 300L340 318Z" fill="#9CBFD2"/>
-<path d="M0 316H1440V460H0Z" fill="url(#seaG)"/>
-<path d="M0 317H1440" stroke="#fff" stroke-width="2" opacity=".55"/>
-<g fill="none" stroke="#fff" stroke-linecap="round" opacity=".75" stroke-width="2.5">
-<path d="M560 352q30-12 60 0t60 0t60 0"/><path d="M880 340q26-10 52 0t52 0t52 0"/><path d="M1180 360q30-12 60 0t60 0t60 0t60 0"/>
-<path d="M640 402q36-14 72 0t72 0t72 0t72 0"/><path d="M1020 420q36-14 72 0t72 0t72 0"/><path d="M420 440q40-16 80 0t80 0t80 0"/></g>
-<path d="M0 392Q170 352 360 384Q470 402 540 460H0Z" fill="#F5DBA8"/><path d="M0 392Q170 352 360 384Q470 402 540 460" fill="none" stroke="#fff" stroke-width="3" opacity=".7"/>
-<g stroke="#21445A" stroke-width="1" opacity=".55"><path d="M905 118L985 372M1015 118L985 372"/><path d="M640 182L702 404M712 182L702 404"/><path d="M1248 222L1262 356M1290 222L1262 356"/></g>
-<path d="M900 120Q960 70 1020 120Q960 92 900 120Z" fill="#FF5E5B"/><path d="M900 120Q960 70 1020 120" fill="none" stroke="#C43B48" stroke-width="2"/>
-<path d="M636 184Q676 152 716 184Q676 166 636 184Z" fill="#FFC233"/>
-<path d="M1246 224Q1268 206 1292 224Q1268 214 1246 224Z" fill="#8E5BD6"/>
-<g><ellipse cx="985" cy="384" rx="15" ry="3.5" fill="#FFB547"/><path d="M985 380L982 362" stroke="#21445A" stroke-width="3" stroke-linecap="round"/><circle cx="981" cy="357" r="3.5" fill="#21445A"/><path d="M968 386q-10-6-16 2M1000 386q8-8 16-2" stroke="#fff" stroke-width="2" fill="none"/></g>
-<g><ellipse cx="702" cy="414" rx="12" ry="3" fill="#FF8A5B"/><path d="M702 411L700 396" stroke="#21445A" stroke-width="2.6" stroke-linecap="round"/><circle cx="699" cy="392" r="3" fill="#21445A"/></g>
-<g opacity=".8"><ellipse cx="1262" cy="364" rx="8" ry="2" fill="#fff"/><path d="M1262 362L1261 352" stroke="#21445A" stroke-width="2" stroke-linecap="round"/></g>
-<g transform="translate(150 344) scale(1.5)" stroke="#1F3A4D" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"><path d="M0 22V7a3 3 0 0 1 3-3h26a11 11 0 0 1 9 6l5 12v4H0z" fill="#fff"/><path d="M0 16h43" stroke="#FF8A5B" stroke-width="3"/><path d="M7 8h11v6H7zM23 8h8l4 6H23z" fill="#BFE6F2"/><circle cx="10" cy="26" r="4.4" fill="#1F3A4D"/><circle cx="34" cy="26" r="4.4" fill="#1F3A4D"/></g>
+<defs>
+<linearGradient id="hSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#78BCE3"/><stop offset=".45" stop-color="#BDE0EF"/><stop offset=".78" stop-color="#F7DCC6"/><stop offset="1" stop-color="#FBC79B"/></linearGradient>
+<radialGradient id="hSun" cx="1010" cy="282" r="430" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#FFF1C9"/><stop offset=".18" stop-color="#FFDDA0" stop-opacity=".85"/><stop offset=".5" stop-color="#FFC890" stop-opacity=".3"/><stop offset="1" stop-color="#FFC890" stop-opacity="0"/></radialGradient>
+<linearGradient id="hMtA" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9DB0D2"/><stop offset="1" stop-color="#D9D3DC"/></linearGradient>
+<linearGradient id="hMtB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7C93BC"/><stop offset="1" stop-color="#B9BED3"/></linearGradient>
+<linearGradient id="hHillA" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#A9BE97"/><stop offset="1" stop-color="#C9C9A4"/></linearGradient>
+<linearGradient id="hHillB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7FA270"/><stop offset="1" stop-color="#9DB081"/></linearGradient>
+<linearGradient id="hSea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8CC2D8"/><stop offset=".25" stop-color="#4E9DC4"/><stop offset="1" stop-color="#1D6A97"/></linearGradient>
+<linearGradient id="hLand" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#93AE63"/><stop offset=".55" stop-color="#6F904A"/><stop offset="1" stop-color="#4F7438"/></linearGradient>
+<linearGradient id="hRef" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFE7B0" stop-opacity=".95"/><stop offset="1" stop-color="#FFE7B0" stop-opacity="0"/></linearGradient>
+<linearGradient id="hKiteA" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#FF4F7B"/><stop offset="1" stop-color="#FF8A5B"/></linearGradient>
+<linearGradient id="hKiteB" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#FFB547"/><stop offset="1" stop-color="#FFD66B"/></linearGradient>
+<filter id="hSoft" x="-20%" y="-50%" width="140%" height="200%"><feGaussianBlur stdDeviation="5"/></filter>
+<filter id="hGrain" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".8" numOctaves="2" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 .5 0 0 0 0 .5 0 0 0 0 .5 0 0 0 .9 0"/></filter>
+<path id="hCyp" d="M0 0C-3.6-8-4.6-22-1.2-36C-.6-38 .6-38 1.2-36C4.6-22 3.6-8 0 0Z"/>
+</defs>
+<rect width="1440" height="310" fill="url(#hSky)"/>
+<rect width="1440" height="310" fill="url(#hSun)"/>
+<g filter="url(#hSoft)" opacity=".9">
+<g fill="#fff" opacity=".75"><ellipse cx="610" cy="96" rx="120" ry="16"/><ellipse cx="660" cy="84" rx="64" ry="18"/><ellipse cx="1220" cy="70" rx="150" ry="14"/><ellipse cx="1270" cy="60" rx="70" ry="16"/><ellipse cx="90" cy="178" rx="110" ry="10"/></g>
+<g fill="#FFC9B4" opacity=".55"><ellipse cx="615" cy="106" rx="110" ry="6"/><ellipse cx="1225" cy="80" rx="140" ry="5"/><ellipse cx="860" cy="200" rx="160" ry="7"/><ellipse cx="1180" cy="226" rx="130" ry="6"/></g>
+</g>
+<circle cx="1010" cy="282" r="44" fill="#FFF4D8"/>
+<g fill="none" stroke="#3B5A70" stroke-width="1.8" stroke-linecap="round" opacity=".7"><path d="M720 140q7-7 14 0q7-7 14 0"/><path d="M758 124q5-5 10 0q5-5 10 0"/><path d="M700 160q4-4 8 0q4-4 8 0"/></g>
+<path d="M520 300L590 266L640 272L712 224L760 240L838 186L878 204L930 172L990 214L1042 196L1100 232L1160 204L1232 246L1292 222L1362 256L1440 236V300Z" fill="url(#hMtA)"/>
+<g fill="#fff" opacity=".75"><path d="M838 186L822 198L832 197L840 205L848 196L856 199Z"/><path d="M930 172L914 186L924 184L932 193L941 183L950 187Z"/><path d="M712 224L700 233L708 232L714 238L720 231L726 233Z"/><path d="M1160 204L1148 213L1156 212L1162 218L1168 211L1174 213Z"/></g>
+<path d="M600 300L680 270L758 282L830 248L900 268L982 238L1060 276L1140 252L1222 284L1300 262L1440 288V300Z" fill="url(#hMtB)"/>
+<rect y="296" width="1440" height="8" fill="#F3E3D6" opacity=".55"/>
+<path d="M0 270C60 256 130 256 200 266S330 284 440 290S600 296 720 300H0Z" fill="url(#hHillA)"/>
+<path d="M0 294C60 284 130 282 200 288S320 296 400 300H0Z" fill="url(#hHillB)"/>
+<g fill="#45704D"><use href="#hCyp" transform="translate(52 262) scale(.8)"/><use href="#hCyp" transform="translate(64 261) scale(.95)"/><use href="#hCyp" transform="translate(77 262) scale(.75)"/><use href="#hCyp" transform="translate(176 268) scale(.7)"/><use href="#hCyp" transform="translate(188 269) scale(.85)"/><use href="#hCyp" transform="translate(22 290) scale(.9)"/><use href="#hCyp" transform="translate(34 289) scale(1.1)"/></g>
+<g><rect x="112" y="246" width="30" height="16" fill="#F1DEC2"/><path d="M108 247L127 237L146 247Z" fill="#C8674A"/><rect x="132" y="230" width="9" height="16" fill="#E9D3B4"/><path d="M130 231L136.5 226L143 231Z" fill="#B85B40"/><rect x="118" y="251" width="4" height="5" fill="#7A5B45"/><rect x="130" y="251" width="4" height="5" fill="#7A5B45"/></g>
+<rect y="300" width="1440" height="160" fill="url(#hSea)"/>
+<path d="M0 300.5H1440" stroke="#fff" stroke-width="1.6" opacity=".6"/>
+<g fill="url(#hRef)"><rect x="972" y="303" width="76" height="3" rx="1.5"/><rect x="980" y="310" width="60" height="3" rx="1.5"/><rect x="962" y="318" width="96" height="3" rx="1.5"/><rect x="986" y="327" width="48" height="3" rx="1.5"/><rect x="968" y="337" width="84" height="3" rx="1.5"/><rect x="990" y="348" width="40" height="3" rx="1.5"/><rect x="976" y="360" width="68" height="3" rx="1.5"/><rect x="994" y="374" width="32" height="3" rx="1.5"/><rect x="984" y="390" width="52" height="3" rx="1.5"/></g>
+<g fill="none" stroke="#fff" stroke-linecap="round" opacity=".45" stroke-width="1.6"><path d="M690 330q14-5 28 0t28 0"/><path d="M820 352q16-6 32 0t32 0t32 0"/><path d="M1120 336q14-5 28 0t28 0"/><path d="M1240 360q16-6 32 0t32 0"/><path d="M880 396q18-6 36 0t36 0t36 0"/><path d="M1100 414q18-6 36 0t36 0"/><path d="M1320 400q16-6 32 0t32 0"/></g>
+<g transform="translate(1168 288)"><path d="M0 10H20L17 14H3Z" fill="#fff" opacity=".9"/><path d="M10 9V-8L18 8Z" fill="#fff" opacity=".85"/><path d="M9 9V-4L3 8Z" fill="#fff" opacity=".7"/></g>
+<g stroke="#2A4558" stroke-width=".9" opacity=".55" fill="none"><path d="M1004 110L1068 336M1096 110L1068 336"/><path d="M1206 176L1262 362M1262 168L1262 362"/></g>
+<path d="M1000 112Q1050 66 1100 112Q1050 86 1000 112Z" fill="url(#hKiteA)"/><path d="M1000 112Q1050 66 1100 112" fill="none" stroke="#C43B5C" stroke-width="2"/>
+<path d="M1202 178Q1234 150 1266 170Q1236 160 1202 178Z" fill="url(#hKiteB)"/>
+<g><ellipse cx="1068" cy="340" rx="13" ry="3" fill="#FF8A5B"/><path d="M1068 337L1065 322" stroke="#22394A" stroke-width="2.8" stroke-linecap="round"/><circle cx="1064" cy="318" r="3.2" fill="#22394A"/><path d="M1049 343q-9-5-15 2M1087 343q8-7 15-2" stroke="#fff" stroke-width="1.8" fill="none" opacity=".9"/></g>
+<g opacity=".85"><ellipse cx="1262" cy="366" rx="9" ry="2.2" fill="#FFB547"/><path d="M1262 364L1261 353" stroke="#22394A" stroke-width="2.2" stroke-linecap="round"/><circle cx="1261" cy="350" r="2.4" fill="#22394A"/></g>
+<path d="M0 330C120 316 250 320 370 334C478 346 566 360 644 386C700 404 744 430 766 460H0Z" fill="url(#hLand)"/>
+<path d="M556 358C600 368 640 380 670 394C710 412 742 436 760 460" fill="none" stroke="#F0DDAE" stroke-width="7" stroke-linecap="round" opacity=".9"/>
+<path d="M-20 356C140 342 300 344 440 356C540 365 620 388 690 420C720 434 740 448 752 460" fill="none" stroke="#5E6569" stroke-width="15" stroke-linecap="round"/>
+<path d="M-20 356C140 342 300 344 440 356C540 365 620 388 690 420C720 434 740 448 752 460" fill="none" stroke="#F3F1E8" stroke-width="1.6" stroke-dasharray="10 10" opacity=".9"/>
+<g transform="translate(150 336)"><path d="M0 0C2-14 4-30 2-46" stroke="#5C4632" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M2-46C-6-52-6-58 6-60C14-66 34-66 42-60C54-60 58-52 48-48C40-42 14-42 2-46Z" fill="#3F6A3E"/><path d="M8-58C16-63 30-63 38-58" stroke="#5E8A52" stroke-width="4" fill="none" stroke-linecap="round"/></g>
+<g fill="#557C3F"><ellipse cx="60" cy="372" rx="26" ry="10"/><ellipse cx="250" cy="378" rx="30" ry="11"/><ellipse cx="380" cy="390" rx="34" ry="12"/><ellipse cx="560" cy="404" rx="26" ry="9"/></g>
+<g fill="#45704D"><use href="#hCyp" transform="translate(300 352) scale(1.2)"/><use href="#hCyp" transform="translate(316 351) scale(1.45)"/></g>
+<g transform="translate(398 296) rotate(4)" stroke="#22394A" stroke-width="1.5" stroke-linejoin="round">
+<ellipse cx="66" cy="60" rx="62" ry="4" fill="#000" opacity=".2" stroke="none"/>
+<rect x="20" y="1" width="58" height="3.5" rx="1" fill="#3B4B57" stroke="none"/>
+<path d="M6 54V12Q6 5 13 5H96Q101 5 103 9L113 25Q124 28 127 38L129 50Q129 55 124 55H10Q6 55 6 54Z" fill="#F7F5EF"/>
+<rect x="14" y="7.5" width="66" height="3" rx="1.5" fill="#D9DCDE" stroke="none"/>
+<path d="M6 41H129" stroke="#FF6A60" stroke-width="2.2"/>
+<path d="M6 45.5H129V50Q129 55 124 55H10Q6 55 6 54Z" fill="#AAB4BA" stroke="none"/>
+<path d="M101 11L111 25.5H100Z" fill="#8FC9DF"/>
+<path d="M84 11H98L99 25.5H84Z" fill="#8FC9DF"/>
+<rect x="14" y="13" width="22" height="12" rx="2.5" fill="#3E5563"/>
+<rect x="41" y="13" width="17" height="12" rx="2.5" fill="#3E5563"/>
+<path d="M62 7V53M82 7V53" stroke="#C3C8CB" stroke-width="1.2"/>
+<rect x="66" y="29" width="7" height="2" rx="1" fill="#7C8A93" stroke="none"/>
+<text x="16" y="37" font-family="Bricolage Grotesque,system-ui,sans-serif" font-weight="700" font-size="8.5" fill="#FF5E5B" stroke="none" letter-spacing=".5">Wanda</text>
+<ellipse cx="125.5" cy="40" rx="2.4" ry="2" fill="#FFE7A0" stroke="none"/>
+<rect x="111" y="50" width="19" height="5" rx="2" fill="#3B4B57" stroke="none"/>
+<rect x="3" y="50" width="11" height="5" rx="2" fill="#3B4B57" stroke="none"/>
+<path d="M17 55A11 11 0 0 1 39 55M95 55A11 11 0 0 1 117 55" fill="#3B4B57" stroke="none"/>
+<circle cx="28" cy="56" r="8.5" fill="#1F2B33"/><circle cx="28" cy="56" r="3.6" fill="#C7CED3" stroke="none"/>
+<circle cx="106" cy="56" r="8.5" fill="#1F2B33"/><circle cx="106" cy="56" r="3.6" fill="#C7CED3" stroke="none"/>
+</g>
+<rect width="1440" height="460" filter="url(#hGrain)" opacity=".22" style="mix-blend-mode:overlay"/>
 </svg>
   <div class="hero-inner">
     <div class="top">
@@ -530,6 +592,7 @@ details.more[open] summary{margin-bottom:6px}
             <button type="button" role="menuitem" id="btnTripEdit">Modifica viaggio</button>
             <button type="button" role="menuitem" id="btnBackup" title="Scarica una copia di viaggi e note">Scarica backup</button>
             <button type="button" role="menuitem" id="btnInstall" hidden>Installa l'app</button>
+            <button type="button" role="menuitem" id="btnPwd">Cambia password</button>
             <button type="button" role="menuitem" id="btnOut">Esci</button>
           </div>
         </div>
@@ -571,6 +634,7 @@ details.more[open] summary{margin-bottom:6px}
 <div class="overlay hide" id="ovPick"><div class="pickwrap" id="slotPick"></div></div>
 <div class="overlay hide" id="ovStop"><form class="sheet" id="fStop" autocomplete="off"></form></div>
 <div class="overlay hide" id="ovTrip"><form class="sheet" id="fTrip" autocomplete="off"></form></div>
+<div class="overlay hide" id="ovPwd"><form class="sheet" id="fPwd"></form></div>
 <div class="overlay hide lb" id="ovLb"></div>
 <datalist id="gaz"></datalist>
 
@@ -585,6 +649,10 @@ const KICON={'Area sosta':'<path d="M3 16V9a2 2 0 0 1 2-2h9a4 4 0 0 1 4 4v5"/><p
 const GLOW='radial-gradient(60% 70% at 85% 16%,rgba(255,224,150,.6) 0,rgba(255,224,150,0) 60%),';
 const GRADS=[GLOW+'linear-gradient(155deg,#3D2C8D 0%,#8E3FA0 38%,#E0577A 72%,#F59E4C 100%)',GLOW+'linear-gradient(155deg,#0B3C5D 0%,#1E6F9F 40%,#2BA3B8 75%,#7FD3C3 100%)',GLOW+'linear-gradient(155deg,#16423C 0%,#2D7A5A 45%,#5DAA68 78%,#C8D96F 100%)',GLOW+'linear-gradient(155deg,#5A2A27 0%,#B2453A 40%,#E07A3F 75%,#F4C15D 100%)'];
 function gradFor(tid){const ts=tripsByDate();return GRADS[Math.max(0,ts.findIndex(t=>t.id===tid))%GRADS.length];}
+// copertina: la prima foto del viaggio (se c'è), altrimenti il colore del viaggio
+function coverUrl(tid){const s=stopsOf(tid).find(x=>(x.photos||[]).some(p=>S.urls[p.id]));if(!s)return '';const p=s.photos.find(p=>S.urls[p.id]);return S.urls[p.id];}
+function tripBg(tid){const u=coverUrl(tid);return u?'linear-gradient(180deg,rgba(12,16,38,.30) 0%,rgba(12,16,38,.12) 38%,rgba(12,16,38,.74) 100%),url(\''+u+'\') center/cover':gradFor(tid);}
+const tripScene=tid=>coverUrl(tid)?'':SCENE;
 const KCOL={'Area sosta':'k1','Campeggio':'k2','Sosta libera':'k3','Agriturismo':'k4','Parcheggio':'k5','Solo passaggio':'k6'};
 const kindIcon=k=>KICON[k]?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+KICON[k]+'</svg>':'';
 // luoghi frequenti: nome, lat, lon, importante (appare sempre sulla mappa)
@@ -723,7 +791,7 @@ function renderTop(){
     const st=stopsOf(t.id);let dist=0;for(let k=1;k<st.length;k++)dist+=km(st[k-1],st[k]);
     const nights=st.reduce((a,s)=>a+(+s.nights||0),0),cost=st.reduce((a,s)=>a+(+s.cost||0),0),ph=st.reduce((a,s)=>a+((s.photos||[]).length),0);
     const range=st.length?(st[0].date===st[st.length-1].date?fmtLong(st[0].date):fmtDate(st[0].date,{day:'numeric',month:'short'})+' – '+fmtLong(st[st.length-1].date)):'Ancora nessuna tappa';
-    o+=`<article class="hero${t.id===S.tripId?' on':''}" data-trip="${esc(t.id)}" style="background:${GRADS[i%GRADS.length]}"><div class="kicker">Viaggio ${i+1} di ${ts.length} · Wanda</div><h2>${esc(t.name)}</h2><div class="sub">${esc(range)}</div>${t.notes?`<p class="hnote">${esc(t.notes)}</p>`:''}<div class="stats"><div class="stat"><b>${st.length}</b><span>tappe</span></div><div class="stat"><b>${nights}</b><span>notti</span></div><div class="stat" title="Somma delle distanze in linea d'aria tra tappe consecutive"><b>${nf(dist)}</b><span>km</span></div><div class="stat"><b>${nf(cost)}€</b><span>spesa</span></div><div class="stat"><b>${ph}</b><span>foto</span></div></div>${SCENE}</article>`;
+    o+=`<article class="hero${t.id===S.tripId?' on':''}${coverUrl(t.id)?' photo':''}" data-trip="${esc(t.id)}" style="background:${esc(tripBg(t.id))}"><div class="kicker">Viaggio ${i+1} di ${ts.length} · Wanda</div><h2>${esc(t.name)}</h2><div class="sub">${esc(range)}</div>${t.notes?`<p class="hnote">${esc(t.notes)}</p>`:''}<div class="stats"><div class="stat"><b>${st.length}</b><span>tappe</span></div><div class="stat"><b>${nights}</b><span>notti</span></div><div class="stat" title="Somma delle distanze in linea d'aria tra tappe consecutive"><b>${nf(dist)}</b><span>km</span></div><div class="stat"><b>${nf(cost)}€</b><span>spesa</span></div><div class="stat"><b>${ph}</b><span>foto</span></div></div>${tripScene(t.id)}</article>`;
   });
   o+='</div>';
   if(ts.length>1)o+='<button type="button" class="carbtn prev" id="carPrev" aria-label="Viaggio precedente">‹</button><button type="button" class="carbtn next" id="carNext" aria-label="Viaggio successivo">›</button><div class="cardots">'+ts.map(t=>`<button type="button" class="cdot${t.id===S.tripId?' on':''}" data-dot="${esc(t.id)}" aria-label="${esc(t.name)}"></button>`).join('')+'</div>';
@@ -840,7 +908,7 @@ window.addEventListener('scroll',closeMenu,{passive:true});
 const stopsOf=tid=>S.stops.filter(s=>s.tripId===tid).sort((a,b)=>(a.date||'').localeCompare(b.date||'')||(a.createdAt||0)-(b.createdAt||0));
 const hasStops=()=>S.stops.some(s=>S.trips.some(t=>t.id===s.tripId));
 function tripsByDate(){const f=id=>{const s=stopsOf(id);return s.length?s[0].date:'9999';};return[...S.trips].sort((a,b)=>f(a.id).localeCompare(f(b.id)));}
-const SCENE='<svg class="scene" viewBox="0 0 600 120" preserveAspectRatio="xMidYMax slice" aria-hidden="true"><circle cx="470" cy="48" r="30" fill="#FFF4CC" opacity=".95"/><path d="M0 120V82L70 50L125 82L185 36L265 92L335 56L425 104L485 76L600 104V120Z" fill="#fff" opacity=".28"/><path d="M0 120V98L90 72L160 96L240 68L330 98L440 70L600 110V120Z" fill="#fff" opacity=".45"/><path d="M0 114H600" stroke="#fff" stroke-width="3" stroke-dasharray="14 11" opacity=".85"/></svg>';
+const SCENE='<svg class="scene" viewBox="0 0 600 120" preserveAspectRatio="xMidYMax slice" aria-hidden="true"><circle cx="470" cy="68" r="27" fill="#FFF4CC" opacity=".22"/><circle cx="470" cy="68" r="16" fill="#FFF6D8" opacity=".95"/><path d="M0 120V80C60 62 110 68 160 54C210 42 262 72 322 64C382 56 432 42 492 60C542 74 572 66 600 72V120Z" fill="#fff" opacity=".18"/><path d="M0 120V94C70 82 130 90 200 80C270 70 330 92 400 86C470 80 530 94 600 88V120Z" fill="#fff" opacity=".3"/><g fill="#fff" opacity=".55"><path d="M138 88c-2-6-3-15-.6-24c.6-2 1.6-2 2.2 0c2.4 9 1.4 18-.6 24z"/><path d="M148 87c-2-7-3-18-.6-28c.6-2 1.6-2 2.2 0c2.4 10 1.4 21-.6 28z"/><path d="M158 86c-1.6-5-2.4-12-.4-19c.5-1.6 1.3-1.6 1.8 0c2 7 1.2 14-.4 19z"/></g><path d="M0 120V107C120 99 240 105 330 101C430 97 520 107 600 103V120Z" fill="#fff" opacity=".5"/><path d="M0 116C150 110 300 114 420 110C500 107 560 110 600 108" fill="none" stroke="#fff" stroke-width="2.6" stroke-dasharray="12 9" opacity=".9"/><g transform="translate(372 96)"><path d="M1 12V3.5Q1 1.5 3 1.5H16Q17.5 1.5 18 2.6L20.5 6.6Q23.5 7.4 24 9.6V12Z" fill="#fff"/><path d="M16.4 3.2L18.6 6.6H16.4Z" fill="#000" opacity=".25"/><circle cx="6" cy="12.4" r="2.2" fill="#000" opacity=".45"/><circle cx="19" cy="12.4" r="2.2" fill="#000" opacity=".45"/></g></svg>';
 function daysOf(st){
   const add=(d,n)=>{const x=new Date(d+'T12:00:00Z');x.setUTCDate(x.getUTCDate()+n);return x.toISOString().slice(0,10);};
   const span=s=>Math.max(1,+s.nights||0);
@@ -920,7 +988,7 @@ function renderDays(c){
   A.items.forEach((it,k)=>{
     if(it.type==='trip'){
       const t=it.t;
-      h+=`<div class="tbanner" data-d="${it.d}" style="background:${gradFor(t.id)}"><div class="tb-k">Viaggio ${it.ti+1} di ${it.n}</div><h2>${esc(t.name)}</h2><div class="tb-d">${esc(fmtDate(it.first,{day:'numeric',month:'long'}))} → ${esc(fmtDate(it.last,{day:'numeric',month:'long',year:'numeric'}))} · ${it.days} ${it.days===1?'giorno':'giorni'} · ${nf(it.dist)} km</div>${t.story?`<p>${esc(t.story)}</p>`:''}${SCENE}</div>`;return;}
+      h+=`<div class="tbanner${coverUrl(t.id)?' photo':''}" data-d="${it.d}" style="background:${esc(tripBg(t.id))}"><div class="tb-k">Viaggio ${it.ti+1} di ${it.n}</div><h2>${esc(t.name)}</h2><div class="tb-d">${esc(fmtDate(it.first,{day:'numeric',month:'long'}))} → ${esc(fmtDate(it.last,{day:'numeric',month:'long',year:'numeric'}))} · ${it.days} ${it.days===1?'giorno':'giorni'} · ${nf(it.dist)} km</div>${t.story?`<p>${esc(t.story)}</p>`:''}${tripScene(t.id)}</div>`;return;}
     const di=A.dayKs.indexOf(k),s=it.s,st=it.st;let body='';const dl=esc(fmtDate(it.date,{weekday:'short',day:'numeric',month:'long'}));
     if(it.kind==='start'){const ph=s.photos||[];const pk=it.idx?km(st[it.idx-1],s):0;
       body=`<div class="dc"><div class="dd">${dl} · <span class="chip ${KCOL[s.kind]||''}">${kindIcon(s.kind)}${esc(s.kind||'')}</span></div><h3>${esc(s.title)}</h3><p class="place">${esc(s.place||'')}</p>${s.note?`<p class="note">${esc(s.note)}</p>`:''}<div class="facts">${it.idx?`<span>+${nf(pk)} km</span>`:'<span>partenza</span>'}${+s.nights?`<span>${s.nights} ${+s.nights===1?'notte':'notti'}</span>`:''}${+s.cost?`<span>${nf(s.cost)} €</span>`:''}</div>${ph.length?`<div class="strip">${ph.slice(0,4).map((p,j)=>`<img loading="lazy" data-ph="${j}" data-st="${esc(s.id)}" src="${esc(photoUrl(p))}" alt="">`).join('')}${ph.length>4?`<div class="more" data-ph="4" data-st="${esc(s.id)}">+${ph.length-4}</div>`:''}</div>`:''}${S.canWrite?`<button class="editpen" data-edit="${esc(s.id)}" type="button" aria-label="Modifica tappa" title="Modifica tappa">${PEN}</button>`:''}</div>`;}
@@ -952,7 +1020,7 @@ function renderStory(c){
     const st=stopsOf(t.id);let dist=0;for(let i=1;i<st.length;i++)dist+=km(st[i-1],st[i]);
     const nights=st.reduce((a,s)=>a+(+s.nights||0),0);
     const range=fmtDate(st[0].date,{day:'numeric',month:'long'})+(st[st.length-1].date!==st[0].date?' – '+fmtLong(st[st.length-1].date):' '+new Date(st[0].date+'T12:00:00').getFullYear());
-    h+='<section class="cover" data-trip="'+esc(t.id)+'" style="background:'+gradFor(t.id)+'"><div class="kicker">Il racconto di Wanda · Boxlife 540 · viaggio '+(ti+1)+' di '+ts.length+'</div><h2>'+esc(t.name)+'</h2><div class="when">'+esc(range)+'</div>'+(t.story?'<p class="intro">'+esc(t.story)+'</p>':(S.canWrite?'<p class="intro">Scrivi qui come è iniziato il viaggio: apri “Modifica viaggio” e racconta la partenza.</p>':''))+SCENE+'</section>';
+    h+='<section class="cover'+(coverUrl(t.id)?' photo':'')+'" data-trip="'+esc(t.id)+'" style="background:'+esc(tripBg(t.id))+'"><div class="kicker">Il racconto di Wanda · Boxlife 540 · viaggio '+(ti+1)+' di '+ts.length+'</div><h2>'+esc(t.name)+'</h2><div class="when">'+esc(range)+'</div>'+(t.story?'<p class="intro">'+esc(t.story)+'</p>':(S.canWrite?'<p class="intro">Scrivi qui come è iniziato il viaggio: apri “Modifica viaggio” e racconta la partenza.</p>':''))+tripScene(t.id)+'</section>';
     st.forEach((s,i)=>{
       const ph=s.photos||[];chaps.push(s);
       if(i)h+='<div class="leg">'+nf(km(st[i-1],s))+' km</div>';
@@ -1104,7 +1172,7 @@ document.addEventListener('keydown',e=>{
   if(lb){if(e.key==='Escape')closeLb();else if(e.key==='ArrowRight'){lb.i=(lb.i+1)%lb.list.length;drawLb();}else if(e.key==='ArrowLeft'){lb.i=(lb.i+lb.list.length-1)%lb.list.length;drawLb();}return;}
   if(e.key==='Escape'&&!$('#menuList').hidden){closeMenu();$('#btnMenu').focus();return;}
   if(e.key==='Escape'&&!$('#ovAll').classList.contains('hide')){$('#ovAll').classList.add('hide');return;}
-  if(e.key==='Escape'){if(S.pick)finishPick(null);else if(!$('#ovStop').classList.contains('hide'))closeStop(true);else $('#ovTrip').classList.add('hide');}});
+  if(e.key==='Escape'){if(S.pick)finishPick(null);else if(!$('#ovStop').classList.contains('hide'))closeStop(true);else{$('#ovTrip').classList.add('hide');$('#ovPwd').classList.add('hide');}}});
 
 /* ---------- esempio ---------- */
 async function loadDemo(){
@@ -1128,21 +1196,61 @@ async function loadDemo(){
 
 /* ---------- avvio ---------- */
 function lockUI(on){document.body.classList.toggle('locked',on);}
+const EYE='<svg viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+const pwField=(id,label,auto)=>`<div class="fld"><label for="${id}">${label}</label><div class="pwrow"><input id="${id}" type="password" required minlength="8" autocomplete="${auto}"><button type="button" class="pweye" data-eye="${id}" aria-label="Mostra password" title="Mostra password">${EYE}</button></div></div>`;
+function wireEyes(root){root.querySelectorAll('[data-eye]').forEach(b=>b.onclick=()=>{const i=document.getElementById(b.dataset.eye);const show=i.type==='password';i.type=show?'text':'password';b.classList.toggle('on',show);b.setAttribute('aria-label',show?'Nascondi password':'Mostra password');});}
+const authMsg=e=>{const m=(e&&e.message||'').toLowerCase();
+  if(m.includes('invalid login'))return 'Email o password non corretti.';
+  if(m.includes('email not confirmed'))return 'Questo account non è ancora confermato.';
+  if(m.includes('should be different'))return 'La nuova password deve essere diversa da quella attuale.';
+  if(m.includes('weak')||m.includes('at least'))return 'Password troppo semplice: usa almeno 8 caratteri.';
+  if(m.includes('rate')||m.includes('too many'))return 'Troppi tentativi: aspetta qualche minuto e riprova.';
+  if(m.includes('fetch'))return 'Nessuna connessione: riprova quando c\'è rete.';
+  return 'Non è andata: '+(e&&e.message||'errore sconosciuto');};
 function showLogin(msg){
   lockUI(true);S.loading=false;
-  $('#content').innerHTML=`<div class="empty login"><h2>Entra nel diario</h2><p>Scrivi la tua email: ti mandiamo un link per entrare, senza password.</p>
-  <form id="fLogin" class="loginrow"><input id="lEmail" type="email" required autocomplete="email" placeholder="nome@esempio.it" aria-label="Email"><button class="btn primary" type="submit">Mandami il link</button></form>
+  $('#content').innerHTML=`<div class="empty login"><h2>Entra nel diario</h2><p>Accedi con la tua email e la tua password.</p>
+  <form id="fLogin" class="loginform"><div class="fld"><label for="lEmail">Email</label><input id="lEmail" type="email" required autocomplete="username" inputmode="email" placeholder="nome@esempio.it"></div>
+  ${pwField('lPwd','Password','current-password')}
   <p class="err" id="lMsg">${esc(msg||'')}</p>
-  <div class="codebox" id="lCode" hidden><p>Se nella mail c'è anche un <b>codice</b>, puoi scriverlo qui: serve soprattutto nell'app installata su iPhone, dove il link si apre in Safari.</p>
-  <form id="fCode" class="loginrow"><input id="lTok" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="Codice dalla mail" aria-label="Codice dalla mail" required><button class="btn primary" type="submit">Entra</button></form><p class="err" id="lCodeMsg"></p></div></div>`;
-  let sentTo='';
-  $('#fLogin').onsubmit=async e=>{e.preventDefault();const email=$('#lEmail').value.trim().toLowerCase();const m=$('#lMsg');m.textContent='Invio in corso…';
-    const{error}=await sb.auth.signInWithOtp({email,options:{emailRedirectTo:location.origin+location.pathname}});
-    if(error){m.textContent='Invio non riuscito: '+error.message;return;}
-    sentTo=email;m.textContent='Fatto! Apri la mail e tocca il link.';$('#lCode').hidden=false;};
-  $('#fCode').onsubmit=async e=>{e.preventDefault();const cm=$('#lCodeMsg');cm.textContent='Controllo il codice…';
-    const{error}=await sb.auth.verifyOtp({email:sentTo,token:$('#lTok').value.replace(/\s/g,''),type:'email'});
-    cm.textContent=error?'Codice non valido o scaduto: richiedi una nuova mail.':'';};
+  <button class="btn primary wide" type="submit">Entra</button>
+  <button class="linkbtn" type="button" id="lForgot">Password dimenticata o primo accesso?</button></form></div>`;
+  wireEyes($('#content'));
+  $('#fLogin').onsubmit=async e=>{e.preventDefault();const m=$('#lMsg');m.classList.remove('okmsg');m.textContent='Accesso in corso…';
+    const{error}=await sb.auth.signInWithPassword({email:$('#lEmail').value.trim().toLowerCase(),password:$('#lPwd').value});
+    if(error){m.textContent=authMsg(error);$('#lPwd').select();}else m.textContent='';};
+  $('#lForgot').onclick=async()=>{const m=$('#lMsg'),em=$('#lEmail');const email=em.value.trim().toLowerCase();
+    if(!email||!em.checkValidity()){m.classList.remove('okmsg');m.textContent='Scrivi prima la tua email qui sopra.';em.focus();return;}
+    m.classList.remove('okmsg');m.textContent='Invio in corso…';
+    const{error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});
+    if(error){m.textContent=authMsg(error);return;}
+    m.classList.add('okmsg');m.textContent='Fatto: ti è arrivata una mail. Tocca il link e scegli la nuova password.';};
+}
+// dopo il link "reimposta password" della mail: si sceglie la password, poi si entra
+function showSetPassword(session){
+  lockUI(true);S.loading=false;
+  $('#content').innerHTML=`<div class="empty login"><h2>Scegli la password</h2><p>Account: <b>${esc(session.user.email||'')}</b>. Almeno 8 caratteri; la userai per entrare da ogni dispositivo.</p>
+  <form id="fNewPwd" class="loginform">${pwField('nPwd','Nuova password','new-password')}${pwField('nPwd2','Ripeti la password','new-password')}
+  <p class="err" id="nMsg"></p><button class="btn primary wide" type="submit">Salva ed entra</button></form></div>`;
+  wireEyes($('#content'));
+  $('#fNewPwd').onsubmit=async e=>{e.preventDefault();const m=$('#nMsg');
+    if($('#nPwd').value!==$('#nPwd2').value){m.textContent='Le due password non coincidono.';return;}
+    m.textContent='Salvo…';const{error}=await sb.auth.updateUser({password:$('#nPwd').value});
+    if(error){m.textContent=authMsg(error);return;}
+    S.recovering=false;history.replaceState(null,'',location.pathname);startApp(session);};
+}
+// "Cambia password" dal menu, quando si è già dentro
+function openPassword(){
+  const f=$('#fPwd');
+  f.innerHTML=`<h2>Cambia password</h2>${pwField('cPwd','Nuova password','new-password')}${pwField('cPwd2','Ripeti la password','new-password')}
+  <p class="err" id="cMsg"></p><div class="foot"><span></span><div class="grp"><button class="btn ghost" type="button" id="cCancel">Annulla</button><button class="btn primary" type="submit">Salva</button></div></div>`;
+  wireEyes(f);$('#ovPwd').classList.remove('hide');setTimeout(()=>$('#cPwd').focus(),30);
+  $('#cCancel').onclick=()=>$('#ovPwd').classList.add('hide');
+  f.onsubmit=async e=>{e.preventDefault();const m=$('#cMsg');m.classList.remove('okmsg');
+    if($('#cPwd').value!==$('#cPwd2').value){m.textContent='Le due password non coincidono.';return;}
+    m.textContent='Salvo…';const{error}=await sb.auth.updateUser({password:$('#cPwd').value});
+    if(error){m.textContent=authMsg(error);return;}
+    m.classList.add('okmsg');m.textContent='Password salvata.';setTimeout(()=>$('#ovPwd').classList.add('hide'),1200);};
 }
 let started=false;
 async function startApp(session){
@@ -1190,12 +1298,16 @@ mapEvents();initMap();
   const cfg=window.WANDA_CONFIG||{};
   if(!window.supabase||!cfg.supabaseUrl||!cfg.supabaseAnonKey||cfg.supabaseUrl.includes('INSERISCI')){
     lockUI(true);S.loading=false;$('#content').innerHTML='<div class="empty"><h2>Manca la configurazione</h2><p>Apri il file <b>config.js</b> e inserisci l’indirizzo del progetto Supabase e la chiave pubblica (anon). Le istruzioni sono nel file README.</p></div>';return;}
+  // il link "reimposta password" arriva con type=recovery: lo leggo prima che Supabase pulisca l'indirizzo
+  S.recovering=/type=recovery/.test(location.hash+location.search);
   sb=window.supabase.createClient(cfg.supabaseUrl,cfg.supabaseAnonKey);
   $('#btnOut').onclick=async()=>{clearCache();try{await sb.auth.signOut();}catch(e){}location.reload();};
   $('#btnBackup').onclick=backup;
-  sb.auth.onAuthStateChange((ev,session)=>{if(session)startApp(session);});
+  $('#btnPwd').onclick=openPassword;
+  sb.auth.onAuthStateChange((ev,session)=>{if(ev==='PASSWORD_RECOVERY')S.recovering=true;if(!session)return;
+    if(S.recovering)setTimeout(()=>{if(!started)showSetPassword(session);},0);else startApp(session);});
   let session=null;try{({data:{session}}=await sb.auth.getSession());}catch(e){}
-  if(session){startApp(session);return;}
+  if(session){if(S.recovering)showSetPassword(session);else startApp(session);return;}
   // senza rete e senza sessione leggibile: mostro comunque l'ultima copia salvata
   if(navigator.onLine===false&&goOffline())return;
   showLogin('');

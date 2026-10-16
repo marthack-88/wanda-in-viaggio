@@ -2,7 +2,7 @@
 // - pagina e config: prima la rete (così gli aggiornamenti arrivano subito), poi la copia salvata
 // - librerie, caratteri, mappe e foto già viste: copia salvata, altrimenti rete
 // - dati e accesso Supabase: sempre dalla rete (la copia dei dati la tiene la pagina)
-const V = 'wanda-v1';
+const V = 'wanda-v2';
 const FOTO = 'wanda-foto';
 const MAPPA = 'wanda-mappa';
 const SHELL = [
