@@ -5,6 +5,12 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Wanda in viaggio</title>
 <meta name="theme-color" content="#6CC3E6">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Wanda">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%23FF5E5B'/%3E%3Cpath d='M4 15V9a2 2 0 0 1 2-2h8a4 4 0 0 1 4 4v4z' fill='none' stroke='white' stroke-width='2'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
@@ -412,6 +418,72 @@ body.locked .side{margin-top:-110px}
 .login{max-width:520px;margin:0 auto}
 .loginrow{display:flex;gap:8px;flex-wrap:wrap}
 .loginrow input{flex:1 1 220px;border:1px solid var(--line);border-radius:11px;padding:10px 12px;background:var(--bg)}
+
+/* ===== menu, schede, tappe, modulo (revisione usabilità) ===== */
+.t-short{display:none}
+.top{flex-wrap:nowrap}
+.brand{min-width:0;white-space:nowrap}
+.tools{flex-wrap:nowrap}
+.menubtn{width:42px;padding:0;display:grid;place-items:center}
+.menubtn svg{width:18px;height:18px}
+.menulist{position:fixed;z-index:60;min-width:210px;background:#fff;border-radius:16px;padding:6px;display:flex;flex-direction:column;box-shadow:0 22px 44px -14px rgba(16,36,29,.5),0 0 0 1px rgba(16,36,29,.06)}
+.menulist[hidden]{display:none}
+.menulist button{border:0;background:none;text-align:left;padding:11px 14px;border-radius:10px;font-weight:600;font-size:15px;cursor:pointer;color:var(--ink)}
+.menulist button:hover,.menulist button:focus-visible{background:var(--soft)}
+.menulist #btnOut{color:var(--danger)}
+.mapslot,.mapbox{isolation:isolate}
+.tab svg{display:none}
+.card{position:relative}
+.card .meta{padding-right:44px}
+.editpen{position:absolute;top:12px;right:12px;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:#fff;display:grid;place-items:center;cursor:pointer;color:var(--muted);box-shadow:0 1px 2px rgba(16,36,29,.06)}
+.editpen:hover{color:var(--ink);border-color:#C9D3C9}
+.editpen svg,.btn svg.ic{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.dc{position:relative}
+.dc .dd{padding-right:44px}
+a.btn.nav{gap:6px;background:linear-gradient(135deg,#7B5BD6,#C2479A);color:#fff;border-color:transparent}
+.btn.ic-btn{display:inline-flex;align-items:center;gap:6px}
+.locrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.coordok{font-size:12.5px;color:var(--muted);margin-top:6px}
+.coordok.ok{color:#24804A;font-weight:600}
+details.more{border:1px solid var(--line);border-radius:14px;padding:4px 14px;margin-bottom:14px;background:rgba(255,255,255,.6)}
+details.more summary{cursor:pointer;font-weight:600;font-size:14px;padding:10px 0;color:var(--muted)}
+details.more[open] summary{margin-bottom:6px}
+.upnote{font-size:12px;color:var(--muted)}
+.fld.nights input{max-width:140px}
+.codebox{margin-top:18px;padding-top:16px;border-top:1px dashed var(--line)}
+.codebox p{margin:0 0 10px;font-size:14px}
+.offline{background:#FFF1D1;color:#7A4A00}
+
+@media (max-width:760px){
+  /* testata più bassa: il viaggio si vede subito */
+  .hero-inner{padding-block:12px 92px}
+  .hero-title{margin-top:16px}
+  .wanda{font-size:44px}
+  .hero-title p{font-size:14px;margin-top:8px}
+  .side{margin-top:-46px;padding-bottom:110px}
+  body.locked .side{margin-top:-60px}
+  /* carosello: una scheda per volta a tutta larghezza */
+  .carhead{margin-inline:0}
+  .tripcar{padding-inline:0;gap:12px;padding-bottom:30px}
+  .tripcar .hero{flex-basis:100%;opacity:1;transform:none}
+  .hero{padding:20px 18px 80px}
+  .hero .scene{height:72px}
+  .stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+  .stat{min-width:0;padding:7px 2px;align-items:center;text-align:center}
+  .stat b{font-size:15px}
+  .stat span{font-size:9px;letter-spacing:.06em}
+  /* schede in una barra fissa in basso, come in un'app */
+  .tabs{position:fixed;left:0;right:0;bottom:0;top:auto;margin:0;border-radius:20px 20px 0 0;padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px));overflow:visible;z-index:30;gap:2px;background:rgba(255,255,255,.94);box-shadow:0 -10px 28px -16px rgba(60,30,90,.5)}
+  .tab{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px 5px;font-size:11px;border-radius:12px}
+  .tab svg{display:block;width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .tabs .spacer{display:none}
+  #btnStopNew{position:absolute;right:16px;bottom:calc(100% + 14px);min-height:50px;padding:0 22px;border-radius:99px;font-size:15px;box-shadow:0 12px 26px -8px rgba(255,79,123,.85)}
+  .dbar{top:max(8px,env(safe-area-inset-top,0px))}
+}
+@media (max-width:520px){
+  .t-long{display:none}.t-short{display:inline}
+  .brand{font-size:17px}
+}
 </style>
 </head>
 <body>
@@ -451,10 +523,16 @@ body.locked .side{margin-top:-110px}
       <div class="brand"><i><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15V8a2 2 0 0 1 2-2h9a4 4 0 0 1 4 4v5"/><path d="M3 15h18v2H3z"/><circle cx="7.5" cy="18.5" r="1.5" fill="#fff"/><circle cx="16.5" cy="18.5" r="1.5" fill="#fff"/></svg></i>Diario del Van</div>
       <div class="tools">
         <select id="tripSel" class="btn" aria-label="Scegli viaggio" hidden></select>
-        <button class="btn" id="btnTripEdit" type="button">Modifica</button>
-        <button class="btn primary" id="btnTripNew" type="button">Nuovo viaggio</button>
-        <button class="btn" id="btnBackup" type="button" title="Scarica una copia di viaggi e note">Backup</button>
-        <button class="btn" id="btnOut" type="button">Esci</button>
+        <button class="btn primary" id="btnTripNew" type="button"><span class="t-long">Nuovo viaggio</span><span class="t-short">+ Viaggio</span></button>
+        <div class="menu" id="topMenu">
+          <button class="btn menubtn" id="btnMenu" type="button" aria-label="Altre azioni" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></button>
+          <div class="menulist" id="menuList" role="menu" hidden>
+            <button type="button" role="menuitem" id="btnTripEdit">Modifica viaggio</button>
+            <button type="button" role="menuitem" id="btnBackup" title="Scarica una copia di viaggi e note">Scarica backup</button>
+            <button type="button" role="menuitem" id="btnInstall" hidden>Installa l'app</button>
+            <button type="button" role="menuitem" id="btnOut">Esci</button>
+          </div>
+        </div>
       </div>
     </div>
     <div class="hero-title"><h1 class="wanda">Wanda <span>in viaggio</span></h1><p>Il diario delle nostre uscite con il Boxlife 540</p></div>
@@ -465,11 +543,11 @@ body.locked .side{margin-top:-110px}
     <div id="notice"></div>
     <section class="tripwrap" id="tripbar" aria-label="I vostri viaggi"></section>
     <div class="tabs" role="tablist">
-      <button class="tab" role="tab" id="tabStops" aria-selected="true">Tappe</button>
-      <button class="tab" role="tab" id="tabDays" aria-selected="false">Giorni</button>
-      <button class="tab" role="tab" id="tabStory" aria-selected="false">Racconto</button>
-      <button class="tab" role="tab" id="tabMap" aria-selected="false">Mappa</button>
-      <button class="tab" role="tab" id="tabPhotos" aria-selected="false">Foto</button>
+      <button class="tab" role="tab" id="tabStops" aria-selected="true"><svg viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg><span>Tappe</span></button>
+      <button class="tab" role="tab" id="tabDays" aria-selected="false"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg><span>Giorni</span></button>
+      <button class="tab" role="tab" id="tabStory" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M12 6.5C10 5 7 4.5 3.5 5v13.5c3.5-.5 6.5 0 8.5 1.5 2-1.5 5-2 8.5-1.5V5C17 4.5 14 5 12 6.5zM12 6.5V20"/></svg><span>Racconto</span></button>
+      <button class="tab" role="tab" id="tabMap" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M9 4L3.5 6v14L9 18l6 2 5.5-2V4L15 6 9 4zM9 4v14M15 6v14"/></svg><span>Mappa</span></button>
+      <button class="tab" role="tab" id="tabPhotos" aria-selected="false"><svg viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><circle cx="9" cy="10" r="1.8"/><path d="M20.5 16l-5-5-9 8.5"/></svg><span>Foto</span></button>
       <span class="spacer"></span>
       <button class="btn route sm" id="btnStopNew" type="button">+ Tappa</button>
     </div>
@@ -531,23 +609,37 @@ try{S.tripId=localStorage.getItem('van.trip')}catch(e){}
 /* ---------- dati ---------- */
 const TRANSP='data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
 let sb=null;S.urls={};
-function upsertLocal(coll,id,data){const arr=S[coll];const row=Object.assign({id},data);const i=arr.findIndex(x=>x.id===id);if(i>=0)arr[i]=row;else arr.push(row);}
-function removeLocal(coll,id){S[coll]=S[coll].filter(x=>x.id!==id);}
+function upsertLocal(coll,id,data){const arr=S[coll];const row=Object.assign({id},data);const i=arr.findIndex(x=>x.id===id);if(i>=0)arr[i]=row;else arr.push(row);saveCache();}
+function removeLocal(coll,id){S[coll]=S[coll].filter(x=>x.id!==id);saveCache();}
+// copia locale del diario, per leggerlo anche senza rete (solo su questo dispositivo)
+const CACHE_KEY='wanda.cache';S.urlT={};let cacheT=null;
+function saveCache(){if(S.offline||!S.email)return;clearTimeout(cacheT);cacheT=setTimeout(()=>{
+  try{localStorage.setItem(CACHE_KEY,JSON.stringify({email:S.email,at:Date.now(),trips:S.trips,stops:S.stops,urls:S.urls,urlT:S.urlT}));}catch(e){}},400);}
+function readCache(email){try{const c=JSON.parse(localStorage.getItem(CACHE_KEY)||'null');return c&&(!email||c.email===email)?c:null;}catch(e){return null;}}
+function clearCache(){try{localStorage.removeItem(CACHE_KEY)}catch(e){}if(window.caches)caches.delete('wanda-foto').catch(()=>{});}
+function goOffline(email){
+  const c=readCache(email);if(!c)return false;
+  S.offline=true;S.canWrite=false;S.email=c.email;S.trips=c.trips||[];S.stops=c.stops||[];
+  const lim=Date.now()-6.5*864e5;Object.keys(c.urls||{}).forEach(k=>{if(((c.urlT||{})[k]||0)>lim)S.urls[k]=c.urls[k];});
+  S.loading=false;lockUI(false);
+  $('#notice').innerHTML='<p class="notice offline">Sei senza rete: stai vedendo la copia salvata il '+esc(new Date(c.at).toLocaleString('it-IT',{day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'}))+'. Per modificare serve la connessione.</p>';
+  renderAll();window.addEventListener('online',()=>location.reload(),{once:true});return true;
+}
 const store={
   async put(coll,id,data){const{error}=await sb.from(coll).upsert({id,data,updated_at:new Date().toISOString()});if(error)throw error;upsertLocal(coll,id,data);signPhotos();},
   async del(coll,id){const{error}=await sb.from(coll).delete().eq('id',id);if(error)throw error;removeLocal(coll,id);}
 };
 S.assets={
   async upload(blob){const path=uid()+'.jpg';const{error}=await sb.storage.from('foto').upload(path,blob,{contentType:'image/jpeg',upsert:false});if(error)throw error;
-    const{data}=await sb.storage.from('foto').createSignedUrl(path,604800);if(data&&data.signedUrl)S.urls[path]=data.signedUrl;return{id:path};},
+    const{data}=await sb.storage.from('foto').createSignedUrl(path,604800);if(data&&data.signedUrl){S.urls[path]=data.signedUrl;S.urlT[path]=Date.now();}return{id:path};},
   async delete(id){await sb.storage.from('foto').remove([id]);}
 };
 let signing=false;
 async function signPhotos(){
-  if(!sb||signing)return;const need=[];S.stops.forEach(s=>(s.photos||[]).forEach(p=>{if(p&&p.id&&!S.urls[p.id])need.push(p.id);}));
+  if(!sb||signing||S.offline)return;const need=[];S.stops.forEach(s=>(s.photos||[]).forEach(p=>{if(p&&p.id&&!S.urls[p.id])need.push(p.id);}));
   if(!need.length)return;signing=true;
-  try{for(let i=0;i<need.length;i+=100){const{data}=await sb.storage.from('foto').createSignedUrls(need.slice(i,i+100),604800);(data||[]).forEach(d=>{if(d&&d.signedUrl&&d.path)S.urls[d.path]=d.signedUrl;});}}catch(e){}
-  signing=false;renderAll();
+  try{for(let i=0;i<need.length;i+=100){const{data}=await sb.storage.from('foto').createSignedUrls(need.slice(i,i+100),604800);(data||[]).forEach(d=>{if(d&&d.signedUrl&&d.path){S.urls[d.path]=d.signedUrl;S.urlT[d.path]=Date.now();}});}}catch(e){}
+  signing=false;saveCache();renderAll();
 }
 const curTrip=()=>S.trips.find(t=>t.id===S.tripId)||null;
 function tripStops(){
@@ -566,7 +658,8 @@ const VAN_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="
 function initMap(){
   if(LM||!window.L)return;
   LM=L.map('map',{zoomControl:false,worldCopyJump:true}).setView([42.3,12.5],6);
-  base.map=L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{maxZoom:19,subdomains:'abcd',attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'}).addTo(LM);
+  // mappa base gratuita senza chiave (CARTO ora la richiede)
+  base.map=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,maxNativeZoom:18,attribution:'Mappa &copy; Esri, HERE, Garmin, &copy; OpenStreetMap'}).addTo(LM);
   base.sat=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'Immagini &copy; Esri'});
   L.control.scale({imperial:false,position:'bottomright'}).addTo(LM);
   layer=L.layerGroup().addTo(LM);
@@ -611,9 +704,15 @@ function selectStop(id,fromMap){S.sel=id;renderMap();renderContent();
   if(fromMap){const el=document.querySelector(`.stop[data-id="${CSS.escape(id)}"]`);if(el)el.scrollIntoView({block:'center',behavior:'smooth'});}
   else{const s=S.stops.find(x=>x.id===id);if(s)focusStop(s);}}
 function photoUrl(p){return (p&&S.urls[p.id])||TRANSP;}
+const PEN='<svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/></svg>';
+const NAV_SVG='<svg class="ic" viewBox="0 0 24 24"><path d="M3 11l18-8-8 18-2-8-8-2z"/></svg>';
+const navUrl=s=>'https://www.google.com/maps/dir/?api=1&destination='+s.lat+','+s.lon;
+const isMobile=()=>matchMedia('(max-width:760px)').matches;
+// porta in vista l'inizio del contenuto (su telefono le schede sono in basso)
+function toContent(){const c=$('#content');window.scrollTo({top:c.getBoundingClientRect().top+window.scrollY-(isMobile()?12:76),behavior:'smooth'});}
 function renderTop(){
   const sel=$('#tripSel');sel.innerHTML=S.trips.length?[...S.trips].sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)).map(t=>`<option value="${esc(t.id)}"${t.id===S.tripId?' selected':''}>${esc(t.name)}</option>`).join(''):'<option>Nessun viaggio</option>';
-  sel.disabled=!S.trips.length;$('#btnTripEdit').hidden=!S.trips.length;
+  sel.disabled=!S.trips.length;$('#btnTripEdit').hidden=!S.trips.length||!S.canWrite;
   $('#btnStopNew').hidden=!S.trips.length;
   const w=S.canWrite;$('#btnTripNew').hidden=!w;$('#btnStopNew').hidden=!w||!S.trips.length;
   const tb=$('#tripbar');const ts=tripsByDate();
@@ -696,7 +795,7 @@ function renderContent(){
   if(!st.length){c.innerHTML=`<div class="empty"><h2>Nessuna tappa</h2><p>Aggiungi la prima sosta del viaggio: puoi scegliere il luogo da un elenco, incollare le coordinate o toccare la mappa.</p>${S.canWrite?'<button class="btn route" id="emStop" type="button">Aggiungi la prima tappa</button>':''}</div>`;const b=$('#emStop');if(b)b.onclick=()=>openStop(null);return;}
   if(S.tab==='photos'){
     const items=[];st.forEach(s=>(s.photos||[]).forEach((p,i)=>items.push({s,p,i})));
-    if(!items.length){c.innerHTML='<div class="empty"><h2>Nessuna foto</h2><p>Apri una tappa con “Modifica” e aggiungi le foto: qui compaiono tutte insieme.</p></div>';return;}
+    if(!items.length){c.innerHTML='<div class="empty"><h2>Nessuna foto</h2><p>Tocca la matita su una tappa e aggiungi le foto: qui compaiono tutte insieme.</p></div>';return;}
     c.innerHTML='<div class="gallery">'+items.map((x,k)=>`<figure data-k="${k}"><img loading="lazy" src="${esc(photoUrl(x.p))}" alt="${esc(x.s.title)}"><figcaption>${esc(x.s.title)}</figcaption></figure>`).join('')+'</div>';
     c.querySelectorAll('figure').forEach(f=>f.onclick=()=>openLb(items.map(x=>({src:photoUrl(x.p),cap:x.s.title+' · '+fmtDate(x.s.date),sid:x.s.id,pid:x.p.id})),+f.dataset.k));
     return;
@@ -704,17 +803,18 @@ function renderContent(){
   c.innerHTML='<ol class="stops">'+st.map((s,i)=>{
     const prev=i?km(st[i-1],s):0,ph=s.photos||[];
     return `<li class="stop${s.id===S.sel?' sel':''}" data-id="${esc(s.id)}"><div class="node">${i+1}</div><div class="card">
+      ${S.canWrite?`<button class="editpen" data-edit type="button" aria-label="Modifica tappa" title="Modifica tappa">${PEN}</button>`:''}
       <div class="meta"><span class="date">${esc(fmtDate(s.date,{weekday:'short',day:'numeric',month:'short'}))}</span><span class="chip ${KCOL[s.kind]||''}">${kindIcon(s.kind)}${esc(s.kind||'')}</span></div>
       <h3>${esc(s.title)}</h3>
-      <p class="place">${esc(s.place||'')} <span class="coord">${s.lat.toFixed(4)}, ${s.lon.toFixed(4)}</span></p>
+      ${s.place?`<p class="place">${esc(s.place)}</p>`:''}
       ${s.note?`<p class="note">${esc(s.note)}</p>`:''}
       <div class="facts">${+s.nights?`<span>${s.nights} ${+s.nights===1?'notte':'notti'}</span>`:'<span>solo passaggio</span>'}${+s.cost?`<span>${nf(s.cost)} €</span>`:''}${i?`<span>+${nf(prev)} km</span>`:'<span>partenza</span>'}</div>
       ${ph.length?`<div class="strip">${ph.slice(0,4).map((p,k)=>`<img loading="lazy" data-ph="${k}" src="${esc(photoUrl(p))}" alt="">`).join('')}${ph.length>4?`<div class="more" data-ph="4">+${ph.length-4}</div>`:''}</div>`:''}
-      <div class="actions">${S.canWrite?'<button class="btn sm" data-edit type="button">Modifica</button>':''}<button class="btn sm" data-onmap type="button">Sulla mappa</button><a href="https://www.openstreetmap.org/?mlat=${s.lat}&mlon=${s.lon}#map=14/${s.lat}/${s.lon}" target="_blank" rel="noopener">Apri su OpenStreetMap</a></div>
+      <div class="actions"><a class="btn sm nav" href="${navUrl(s)}" target="_blank" rel="noopener">${NAV_SVG}Naviga</a><button class="btn sm" data-onmap type="button">Sulla mappa</button></div>
     </div></li>`;}).join('')+'</ol>';
   c.querySelectorAll('.stop').forEach(el=>{const id=el.dataset.id;
     el.onclick=e=>{if(e.target.closest('a,[data-edit],[data-ph],[data-onmap]'))return;selectStop(id,false);};
-    const om=el.querySelector('[data-onmap]');if(om)om.onclick=()=>{const s=S.stops.find(x=>x.id===id);S.sel=id;S.tab='map';S.userView=false;S.view=null;renderAll();if(s)focusStop(s);window.scrollTo({top:document.querySelector('.tabs').getBoundingClientRect().top+window.scrollY-20,behavior:'smooth'});};
+    const om=el.querySelector('[data-onmap]');if(om)om.onclick=()=>{const s=S.stops.find(x=>x.id===id);S.sel=id;S.tab='map';S.userView=false;S.view=null;renderAll();if(s)focusStop(s);toContent();};
     const ed=el.querySelector('[data-edit]');if(ed)ed.onclick=()=>openStop(id);
     el.querySelectorAll('[data-ph]').forEach(im=>im.onclick=()=>{const s=S.stops.find(x=>x.id===id);openLb((s.photos||[]).map(p=>({src:photoUrl(p),cap:s.title+' · '+fmtDate(s.date),sid:s.id,pid:p.id})),+im.dataset.ph);});
   });
@@ -727,6 +827,14 @@ $('#tabStops').onclick=()=>setTab('stops');$('#tabPhotos').onclick=()=>setTab('p
 $('#btnStopNew').onclick=()=>openStop(null);
 $('#btnTripNew').onclick=()=>openTrip(null);
 $('#btnTripEdit').onclick=()=>openTrip(curTrip());
+// menu "⋯" della testata: posizionato sotto il pulsante, si chiude toccando fuori o scegliendo una voce
+function closeMenu(){$('#menuList').hidden=true;$('#btnMenu').setAttribute('aria-expanded','false');}
+$('#btnMenu').onclick=e=>{e.stopPropagation();const l=$('#menuList');if(!l.hidden){closeMenu();return;}
+  const r=$('#btnMenu').getBoundingClientRect();l.style.top=(r.bottom+8)+'px';l.style.right=Math.max(8,window.innerWidth-r.right)+'px';
+  l.hidden=false;$('#btnMenu').setAttribute('aria-expanded','true');const f=l.querySelector('button:not([hidden])');if(f)f.focus();};
+$('#menuList').addEventListener('click',()=>closeMenu());
+document.addEventListener('click',e=>{if(!e.target.closest('#topMenu'))closeMenu();});
+window.addEventListener('scroll',closeMenu,{passive:true});
 
 /* ---------- giorno per giorno e racconto (tutti i viaggi) ---------- */
 const stopsOf=tid=>S.stops.filter(s=>s.tripId===tid).sort((a,b)=>(a.date||'').localeCompare(b.date||'')||(a.createdAt||0)-(b.createdAt||0));
@@ -789,7 +897,9 @@ function updateDay(i){
 function goDay(i,scroll,instant){
   const A=S.all;if(!A)return;i=Math.max(0,Math.min(A.dayKs.length-1,i));updateDay(i);if(!scroll)return;S.lock=Date.now()+900;
   const el=document.querySelector('[data-d="'+i+'"]');if(!el)return;
-  const bar=document.querySelector('.dbar');const y=el.getBoundingClientRect().top+window.scrollY-(bar?bar.offsetHeight:90)-24;
+  // la barra è "sticky": oltre alla sua altezza conta anche la distanza dal bordo in alto
+  const bar=document.querySelector('.dbar');const barTop=bar?parseFloat(getComputedStyle(bar).top)||0:0;
+  const y=el.getBoundingClientRect().top+window.scrollY-(bar?bar.offsetHeight+barTop:90)-16;
   window.scrollTo({top:Math.max(0,y),behavior:instant?'auto':'smooth'});
 }
 function onScrollDays(){
@@ -813,7 +923,7 @@ function renderDays(c){
       h+=`<div class="tbanner" data-d="${it.d}" style="background:${gradFor(t.id)}"><div class="tb-k">Viaggio ${it.ti+1} di ${it.n}</div><h2>${esc(t.name)}</h2><div class="tb-d">${esc(fmtDate(it.first,{day:'numeric',month:'long'}))} → ${esc(fmtDate(it.last,{day:'numeric',month:'long',year:'numeric'}))} · ${it.days} ${it.days===1?'giorno':'giorni'} · ${nf(it.dist)} km</div>${t.story?`<p>${esc(t.story)}</p>`:''}${SCENE}</div>`;return;}
     const di=A.dayKs.indexOf(k),s=it.s,st=it.st;let body='';const dl=esc(fmtDate(it.date,{weekday:'short',day:'numeric',month:'long'}));
     if(it.kind==='start'){const ph=s.photos||[];const pk=it.idx?km(st[it.idx-1],s):0;
-      body=`<div class="dc"><div class="dd">${dl} · <span class="chip ${KCOL[s.kind]||''}">${kindIcon(s.kind)}${esc(s.kind||'')}</span></div><h3>${esc(s.title)}</h3><p class="place">${esc(s.place||'')}</p>${s.note?`<p class="note">${esc(s.note)}</p>`:''}<div class="facts">${it.idx?`<span>+${nf(pk)} km</span>`:'<span>partenza</span>'}${+s.nights?`<span>${s.nights} ${+s.nights===1?'notte':'notti'}</span>`:''}${+s.cost?`<span>${nf(s.cost)} €</span>`:''}</div>${ph.length?`<div class="strip">${ph.slice(0,4).map((p,j)=>`<img loading="lazy" data-ph="${j}" data-st="${esc(s.id)}" src="${esc(photoUrl(p))}" alt="">`).join('')}${ph.length>4?`<div class="more" data-ph="4" data-st="${esc(s.id)}">+${ph.length-4}</div>`:''}</div>`:''}${S.canWrite?`<div class="actions"><button class="btn sm" data-edit="${esc(s.id)}" type="button">Modifica</button></div>`:''}</div>`;}
+      body=`<div class="dc"><div class="dd">${dl} · <span class="chip ${KCOL[s.kind]||''}">${kindIcon(s.kind)}${esc(s.kind||'')}</span></div><h3>${esc(s.title)}</h3><p class="place">${esc(s.place||'')}</p>${s.note?`<p class="note">${esc(s.note)}</p>`:''}<div class="facts">${it.idx?`<span>+${nf(pk)} km</span>`:'<span>partenza</span>'}${+s.nights?`<span>${s.nights} ${+s.nights===1?'notte':'notti'}</span>`:''}${+s.cost?`<span>${nf(s.cost)} €</span>`:''}</div>${ph.length?`<div class="strip">${ph.slice(0,4).map((p,j)=>`<img loading="lazy" data-ph="${j}" data-st="${esc(s.id)}" src="${esc(photoUrl(p))}" alt="">`).join('')}${ph.length>4?`<div class="more" data-ph="4" data-st="${esc(s.id)}">+${ph.length-4}</div>`:''}</div>`:''}${S.canWrite?`<button class="editpen" data-edit="${esc(s.id)}" type="button" aria-label="Modifica tappa" title="Modifica tappa">${PEN}</button>`:''}</div>`;}
     else if(it.kind==='stay'){body=`<div class="dc"><div class="dd">${dl}</div><div class="stayline">Ancora a <b>${esc(s.place||s.title)}</b> · notte ${it.night} di ${Math.max(1,+s.nights)}</div></div>`;}
     else{body=`<div class="dc"><div class="dd">${dl}</div><div class="stayline">Nessuna tappa registrata${s?' dopo '+esc(s.place||s.title):''}</div></div>`;}
     h+=`<div class="dcard ${it.kind}" data-d="${di}"><div class="dn"><small>giorno</small><b>${it.i+1}</b></div>${body}</div>`;
@@ -856,7 +966,7 @@ function renderStory(c){
   });
   c.innerHTML=h+'</div>';
   c.querySelectorAll('[data-ph]').forEach(im=>{const s=chaps[+im.closest('.chap').dataset.c];im.onclick=()=>openLb((s.photos||[]).map(p=>({src:photoUrl(p),cap:s.title+' · '+fmtDate(s.date),sid:s.id,pid:p.id})),+im.dataset.ph);});
-  c.querySelectorAll('[data-map]').forEach(a=>a.onclick=e=>{e.preventDefault();const s=S.stops.find(x=>x.id===a.dataset.map);if(!s)return;S.tripId=s.tripId;S.tab='map';S.sel=s.id;S.view=null;S.userView=false;renderAll();focusStop(s);window.scrollTo({top:document.querySelector('.tabs').getBoundingClientRect().top+window.scrollY-20,behavior:'smooth'});});
+  c.querySelectorAll('[data-map]').forEach(a=>a.onclick=e=>{e.preventDefault();const s=S.stops.find(x=>x.id===a.dataset.map);if(!s)return;S.tripId=s.tripId;S.tab='map';S.sel=s.id;S.view=null;S.userView=false;renderAll();focusStop(s);toContent();});
   c.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>openStop(b.dataset.edit));
 }
 
@@ -897,26 +1007,36 @@ function openStop(id){
   const f=$('#fStop');
   f.innerHTML=`<h2>${s?'Modifica tappa':'Nuova tappa'}</h2>
   <div class="fld"><label for="sTitle">Titolo</label><input id="sTitle" required maxlength="100" placeholder="Es. Tramonto sul lago" value="${esc(s?s.title:'')}"></div>
-  <div class="two"><div class="fld"><label for="sDate">Data</label><input id="sDate" type="date" required value="${esc(s?s.date:(lastDate?lastDate.date:new Date().toISOString().slice(0,10)))}"></div>
+  <div class="two"><div class="fld"><label for="sDate">Data</label><input id="sDate" type="date" required value="${esc(s?s.date:nextDate(lastDate))}"></div>
   <div class="fld"><label for="sKind">Tipo di sosta</label><select id="sKind">${KINDS.map(k=>`<option${s&&s.kind===k?' selected':''}>${k}</option>`).join('')}</select></div></div>
-  <div class="fld"><label for="sPlace">Luogo</label><div class="coordrow"><input id="sPlace" list="gaz" maxlength="120" placeholder="Es. Lago di Braies, Cala Gonone…" value="${esc(s?s.place||'':'')}"><button class="btn" type="button" id="sFind">Cerca</button></div><div id="sRes" class="georesults"></div></div>
-  <div class="fld"><label for="sCoords">Coordinate</label><div class="coordrow"><input id="sCoords" inputmode="decimal" placeholder="43.0770, 11.6790" value="${s?s.lat.toFixed(5)+', '+s.lon.toFixed(5):''}"><button class="btn" type="button" id="sPick">Scegli sulla mappa</button></div>
-  <small>Si compilano da sole con “Cerca” o toccando la mappa. Puoi anche incollare “latitudine, longitudine” da Google Maps.</small></div>
-  <div class="two"><div class="fld"><label for="sNights">Notti</label><input id="sNights" type="number" min="0" max="60" value="${s?(+s.nights||0):1}"></div>
-  <div class="fld"><label for="sCost">Costo totale (€)</label><input id="sCost" type="number" min="0" step="0.5" value="${s&&+s.cost?s.cost:''}" placeholder="0"></div></div>
+  <div class="fld"><label for="sPlace">Luogo</label><div class="coordrow"><input id="sPlace" list="gaz" maxlength="120" placeholder="Es. Lago di Braies, Cala Gonone…" value="${esc(s?s.place||'':'')}"><button class="btn" type="button" id="sFind">Cerca</button></div><div id="sRes" class="georesults"></div>
+  <div class="locrow">${navigator.geolocation?'<button class="btn route sm ic-btn" type="button" id="sGps"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="7.5"/></svg>Usa la mia posizione</button>':''}<button class="btn sm" type="button" id="sPick">Scegli sulla mappa</button></div>
+  <div class="coordok" id="sCoordOk" aria-live="polite"></div></div>
+  <div class="fld nights"><label for="sNights">Notti</label><input id="sNights" type="number" min="0" max="60" inputmode="numeric" value="${s?(+s.nights||0):1}"></div>
   <div class="fld"><label for="sNote">Note</label><textarea id="sNote" maxlength="2000" placeholder="Cosa vi è piaciuto, servizi, consigli, cose da non rifare">${esc(s?s.note||'':'')}</textarea></div>
   <div class="fld"><label>Foto</label><div class="thumbs" id="sThumbs">${thumbsHtml()}</div>
-  ${S.assets?'<div><input id="sFiles" type="file" accept="image/*" multiple hidden><button class="btn sm" type="button" id="sAdd">Aggiungi foto</button> <span id="sUp" class="mapnote"></span></div>':'<small>Il caricamento delle foto richiede un accesso con permessi di modifica.</small>'}</div>
+  ${S.assets?'<div><input id="sFiles" type="file" accept="image/*" multiple hidden><button class="btn sm" type="button" id="sAdd">Aggiungi foto</button> <span id="sUp" class="upnote"></span></div>':'<small>Il caricamento delle foto richiede un accesso con permessi di modifica.</small>'}</div>
+  <details class="more" id="sMore"${s&&+s.cost?' open':''}><summary>Altri dettagli: costo e coordinate</summary>
+  <div class="fld"><label for="sCost">Costo totale (€)</label><input id="sCost" type="number" min="0" step="0.5" inputmode="decimal" value="${s&&+s.cost?s.cost:''}" placeholder="0"></div>
+  <div class="fld"><label for="sCoords">Coordinate</label><input id="sCoords" inputmode="decimal" placeholder="43.0770, 11.6790" value="${s?s.lat.toFixed(5)+', '+s.lon.toFixed(5):''}">
+  <small>Si compilano da sole con “Cerca”, con la posizione o toccando la mappa. Puoi anche incollare “latitudine, longitudine” da Google Maps.</small></div></details>
   <p class="err" id="sErr"></p>
   <div class="foot"><div class="grp">${s?'<button class="btn danger" type="button" id="sDel">Elimina tappa</button>':''}</div><div class="grp"><button class="btn ghost" type="button" id="sCancel">Annulla</button><button class="btn primary" type="submit">Salva tappa</button></div></div>`;
   $('#ovStop').classList.remove('hide');setTimeout(()=>$('#sTitle').focus(),30);
   const place=$('#sPlace'),co=$('#sCoords');
-  place.addEventListener('input',()=>{const g=GAZ.find(x=>x[0]===place.value);if(g){co.value=g[1].toFixed(5)+', '+g[2].toFixed(5);}});
+  place.addEventListener('input',()=>{const g=GAZ.find(x=>x[0]===place.value);if(g){co.value=g[1].toFixed(5)+', '+g[2].toFixed(5);coordStatus();}});
+  co.addEventListener('input',coordStatus);coordStatus();
+  const gps=$('#sGps');
+  if(gps)gps.onclick=()=>{const ok=$('#sCoordOk');ok.classList.remove('ok');ok.textContent='Cerco la posizione…';gps.disabled=true;
+    navigator.geolocation.getCurrentPosition(p=>{gps.disabled=false;const pt={lat:p.coords.latitude,lon:p.coords.longitude};
+      co.value=pt.lat.toFixed(5)+', '+pt.lon.toFixed(5);coordStatus();if(!place.value.trim())reverseGeo(pt);},
+    e=>{gps.disabled=false;ok.textContent=e&&e.code===1?'Permesso negato: consenti la posizione al sito nelle impostazioni del telefono, oppure cerca il luogo.':'Posizione non disponibile ora: cerca il luogo o tocca la mappa.';},
+    {enableHighAccuracy:true,timeout:15000,maximumAge:60000});};
   const find=async()=>{const q=place.value.trim();const box=$('#sRes');if(!q){place.focus();return;}box.innerHTML='<small>Cerco…</small>';
     try{const r=await fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&limit=6&accept-language=it&q='+encodeURIComponent(q));const js=await r.json();
       if(!js.length){box.innerHTML='<small>Nessun risultato: prova con un nome diverso o tocca la mappa.</small>';return;}
       box.innerHTML=js.map((x,i)=>'<button type="button" class="geo" data-g="'+i+'"><b>'+esc(x.name||x.display_name.split(',')[0])+'</b><small>'+esc(x.display_name)+'</small></button>').join('');
-      box.querySelectorAll('[data-g]').forEach(b=>b.onclick=()=>{const x=js[+b.dataset.g];place.value=x.name||x.display_name.split(',')[0];co.value=(+x.lat).toFixed(5)+', '+(+x.lon).toFixed(5);box.innerHTML='';});
+      box.querySelectorAll('[data-g]').forEach(b=>b.onclick=()=>{const x=js[+b.dataset.g];place.value=x.name||x.display_name.split(',')[0];co.value=(+x.lat).toFixed(5)+', '+(+x.lon).toFixed(5);coordStatus();box.innerHTML='';});
     }catch(e){box.innerHTML='<small>Ricerca non disponibile ora. Tocca la mappa o incolla le coordinate.</small>';}};
   $('#sFind').onclick=find;place.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();find();}});
   $('#sPick').onclick=()=>{S.pick=true;S.pickPrev=$('#mapbox').parentNode;$('#ovStop').classList.add('hide');$('#ovPick').classList.remove('hide');placeMap($('#slotPick'));$('#mapbox').classList.add('picking');$('#pickbar').hidden=false;const pc=parseCoords(co.value);setTimeout(()=>{if(!LM)return;LM.invalidateSize();if(pc){S.userView=true;LM.setView([pc.lat,pc.lon],13);}},60);};
@@ -936,7 +1056,7 @@ function openStop(id){
     if(S.assets)for(const p of s.photos||[]){try{await S.assets.delete(p.id)}catch(x){}}
     S.sel=null;closeStop(false);renderAll();};}
   f.onsubmit=async e=>{e.preventDefault();const err=$('#sErr');err.textContent='';
-    const c=parseCoords(co.value);if(!c){err.textContent='Coordinate non valide. Usa il formato 43.0770, 11.6790 oppure scegli il punto sulla mappa.';co.focus();return;}
+    const c=parseCoords(co.value);if(!c){err.textContent=co.value.trim()?'Coordinate non valide. Usa il formato 43.0770, 11.6790 oppure scegli il punto sulla mappa.':'Manca la posizione: usa “Cerca”, “Usa la mia posizione” o “Scegli sulla mappa”.';if(co.value.trim()){$('#sMore').open=true;co.focus();}else place.focus();return;}
     const sid=draft.id||uid();const row={tripId:s?s.tripId:S.tripId,title:$('#sTitle').value.trim(),date:$('#sDate').value,kind:$('#sKind').value,place:place.value.trim(),lat:c.lat,lon:c.lon,nights:Math.max(0,+$('#sNights').value||0),cost:Math.max(0,+$('#sCost').value||0),note:$('#sNote').value.trim(),photos:draft.photos,createdAt:s?s.createdAt:Date.now()};
     try{await store.put('stops',sid,row);}catch(x){err.textContent='Salvataggio non riuscito: '+(x.message||x.code);return;}
     // foto tolte dalla tappa: le elimino dall'archivio
@@ -949,8 +1069,14 @@ async function closeStop(cancel){
 }
 function finishPick(pt){
   S.pick=false;$('#mapbox').classList.remove('picking');$('#pickbar').hidden=true;$('#ovPick').classList.add('hide');placeMap(S.pickPrev&&S.pickPrev.id!=='mapPark'?S.pickPrev:null);S.view=null;S.userView=false;reMap();$('#ovStop').classList.remove('hide');
-  if(pt){$('#sCoords').value=pt.lat.toFixed(5)+', '+pt.lon.toFixed(5);if(!$('#sPlace').value.trim())reverseGeo(pt);}
+  if(pt){$('#sCoords').value=pt.lat.toFixed(5)+', '+pt.lon.toFixed(5);coordStatus();if(!$('#sPlace').value.trim())reverseGeo(pt);}
 }
+// mostra se la posizione della tappa è già impostata (le coordinate stanno in "Altri dettagli")
+function coordStatus(){const el=$('#sCoordOk'),co=$('#sCoords');if(!el||!co)return;const c=parseCoords(co.value);
+  el.classList.toggle('ok',!!c);el.textContent=c?'✓ Posizione impostata ('+c.lat.toFixed(4)+', '+c.lon.toFixed(4)+')':'Posizione non ancora impostata';}
+// data proposta per una nuova tappa: il giorno dopo le notti dell'ultima tappa
+function nextDate(last){if(!last||!last.date)return new Date().toISOString().slice(0,10);
+  const d=new Date(last.date+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+Math.max(0,+last.nights||0));return d.toISOString().slice(0,10);}
 // ridimensiona la foto (max 1600 px) prima del caricamento
 function shrink(file){return new Promise((res,rej)=>{
   const url=URL.createObjectURL(file);const im=new Image();
@@ -976,6 +1102,7 @@ $('#allClose').onclick=()=>$('#ovAll').classList.add('hide');
 $('#ovAll').addEventListener('click',e=>{if(e.target.id==='ovAll')$('#ovAll').classList.add('hide');});
 document.addEventListener('keydown',e=>{
   if(lb){if(e.key==='Escape')closeLb();else if(e.key==='ArrowRight'){lb.i=(lb.i+1)%lb.list.length;drawLb();}else if(e.key==='ArrowLeft'){lb.i=(lb.i+lb.list.length-1)%lb.list.length;drawLb();}return;}
+  if(e.key==='Escape'&&!$('#menuList').hidden){closeMenu();$('#btnMenu').focus();return;}
   if(e.key==='Escape'&&!$('#ovAll').classList.contains('hide')){$('#ovAll').classList.add('hide');return;}
   if(e.key==='Escape'){if(S.pick)finishPick(null);else if(!$('#ovStop').classList.contains('hide'))closeStop(true);else $('#ovTrip').classList.add('hide');}});
 
@@ -1005,26 +1132,54 @@ function showLogin(msg){
   lockUI(true);S.loading=false;
   $('#content').innerHTML=`<div class="empty login"><h2>Entra nel diario</h2><p>Scrivi la tua email: ti mandiamo un link per entrare, senza password.</p>
   <form id="fLogin" class="loginrow"><input id="lEmail" type="email" required autocomplete="email" placeholder="nome@esempio.it" aria-label="Email"><button class="btn primary" type="submit">Mandami il link</button></form>
-  <p class="err" id="lMsg">${esc(msg||'')}</p></div>`;
+  <p class="err" id="lMsg">${esc(msg||'')}</p>
+  <div class="codebox" id="lCode" hidden><p>Se nella mail c'è anche un <b>codice</b>, puoi scriverlo qui: serve soprattutto nell'app installata su iPhone, dove il link si apre in Safari.</p>
+  <form id="fCode" class="loginrow"><input id="lTok" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="Codice dalla mail" aria-label="Codice dalla mail" required><button class="btn primary" type="submit">Entra</button></form><p class="err" id="lCodeMsg"></p></div></div>`;
+  let sentTo='';
   $('#fLogin').onsubmit=async e=>{e.preventDefault();const email=$('#lEmail').value.trim().toLowerCase();const m=$('#lMsg');m.textContent='Invio in corso…';
     const{error}=await sb.auth.signInWithOtp({email,options:{emailRedirectTo:location.origin+location.pathname}});
-    m.textContent=error?'Invio non riuscito: '+error.message:'Fatto! Apri la mail e tocca il link. Puoi chiudere questa pagina.';};
+    if(error){m.textContent='Invio non riuscito: '+error.message;return;}
+    sentTo=email;m.textContent='Fatto! Apri la mail e tocca il link.';$('#lCode').hidden=false;};
+  $('#fCode').onsubmit=async e=>{e.preventDefault();const cm=$('#lCodeMsg');cm.textContent='Controllo il codice…';
+    const{error}=await sb.auth.verifyOtp({email:sentTo,token:$('#lTok').value.replace(/\s/g,''),type:'email'});
+    cm.textContent=error?'Codice non valido o scaduto: richiedi una nuova mail.':'';};
 }
 let started=false;
 async function startApp(session){
   if(started)return;started=true;lockUI(false);
-  const email=(session.user.email||'').toLowerCase();
-  const mem=await sb.from('members').select('email').eq('email',email).maybeSingle();
+  const email=(session.user.email||'').toLowerCase();S.email=email;
+  let mem;try{mem=await sb.from('members').select('email').eq('email',email).maybeSingle();}catch(e){mem={error:e};}
+  // senza rete: non esco dall'account, mostro la copia salvata
+  if(mem.error&&!mem.data){if(goOffline(email))return;started=false;showOfflineEmpty();return;}
   if(!mem.data){started=false;await sb.auth.signOut();showLogin('L’email '+email+' non è tra quelle autorizzate a entrare nel diario.');return;}
   S.loading=true;renderAll();
   const [t,s]=await Promise.all([sb.from('trips').select('id,data'),sb.from('stops').select('id,data')]);
+  if((t.error||s.error)&&goOffline(email))return;
   if(t.error||s.error){$('#notice').innerHTML='<p class="notice">Non riesco a leggere i dati: '+esc((t.error||s.error).message)+'</p>';}
   S.trips=(t.data||[]).map(r=>Object.assign({id:r.id},r.data));S.stops=(s.data||[]).map(r=>Object.assign({id:r.id},r.data));
-  S.loading=false;renderAll();signPhotos();
+  S.loading=false;renderAll();saveCache();signPhotos();
   let tmo=null;const later=()=>{clearTimeout(tmo);tmo=setTimeout(()=>{renderAll();signPhotos();},120);};
   sb.channel('wanda').on('postgres_changes',{event:'*',schema:'public',table:'trips'},p=>{if(p.eventType==='DELETE')removeLocal('trips',p.old.id);else upsertLocal('trips',p.new.id,p.new.data);later();})
     .on('postgres_changes',{event:'*',schema:'public',table:'stops'},p=>{if(p.eventType==='DELETE')removeLocal('stops',p.old.id);else upsertLocal('stops',p.new.id,p.new.data);later();}).subscribe();
 }
+function showOfflineEmpty(){
+  lockUI(true);S.loading=false;
+  $('#content').innerHTML='<div class="empty login"><h2>Nessuna connessione</h2><p>Non riesco a raggiungere il diario e su questo dispositivo non c\'è ancora una copia salvata. Riprova quando c\'è rete.</p><button class="btn primary" type="button" id="btnRetry">Riprova</button></div>';
+  $('#btnRetry').onclick=()=>location.reload();
+}
+// installazione come app: pulsante nel menu (Android/computer) o istruzioni (iPhone/iPad)
+let installEvt=null;
+const isStandalone=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+const isIOS=()=>/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installEvt=e;$('#btnInstall').hidden=false;});
+window.addEventListener('appinstalled',()=>{installEvt=null;$('#btnInstall').hidden=true;});
+if(isIOS()&&!isStandalone())$('#btnInstall').hidden=false;
+$('#btnInstall').onclick=async()=>{
+  if(installEvt){installEvt.prompt();try{await installEvt.userChoice;}catch(e){}installEvt=null;$('#btnInstall').hidden=true;return;}
+  $('#notice').innerHTML='<p class="notice">Per installare l\'app su iPhone o iPad: in Safari tocca <b>Condividi</b> (il quadrato con la freccia) e poi <b>Aggiungi alla schermata Home</b>.</p>';
+  window.scrollTo({top:0,behavior:'smooth'});
+};
+if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});
 function backup(){
   const data={app:'Wanda in viaggio',esportato:new Date().toISOString(),viaggi:S.trips,tappe:S.stops,nota:'Le foto restano nello spazio "foto" di Supabase: qui ci sono solo i loro nomi.'};
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const a=document.createElement('a');
@@ -1036,11 +1191,14 @@ mapEvents();initMap();
   if(!window.supabase||!cfg.supabaseUrl||!cfg.supabaseAnonKey||cfg.supabaseUrl.includes('INSERISCI')){
     lockUI(true);S.loading=false;$('#content').innerHTML='<div class="empty"><h2>Manca la configurazione</h2><p>Apri il file <b>config.js</b> e inserisci l’indirizzo del progetto Supabase e la chiave pubblica (anon). Le istruzioni sono nel file README.</p></div>';return;}
   sb=window.supabase.createClient(cfg.supabaseUrl,cfg.supabaseAnonKey);
-  $('#btnOut').onclick=async()=>{await sb.auth.signOut();location.reload();};
+  $('#btnOut').onclick=async()=>{clearCache();try{await sb.auth.signOut();}catch(e){}location.reload();};
   $('#btnBackup').onclick=backup;
   sb.auth.onAuthStateChange((ev,session)=>{if(session)startApp(session);});
-  const{data:{session}}=await sb.auth.getSession();
-  if(session)startApp(session);else showLogin('');
+  let session=null;try{({data:{session}}=await sb.auth.getSession());}catch(e){}
+  if(session){startApp(session);return;}
+  // senza rete e senza sessione leggibile: mostro comunque l'ultima copia salvata
+  if(navigator.onLine===false&&goOffline())return;
+  showLogin('');
 })();
 })();
 </script>
