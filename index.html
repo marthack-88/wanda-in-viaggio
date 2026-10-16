@@ -1,0 +1,1048 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Wanda in viaggio</title>
+<meta name="theme-color" content="#6CC3E6">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%23FF5E5B'/%3E%3Cpath d='M4 15V9a2 2 0 0 1 2-2h8a4 4 0 0 1 4 4v4z' fill='none' stroke='white' stroke-width='2'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+[hidden]{display:none!important}
+img{max-width:100%}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+/* Layout: app di viaggio a schermo diviso. Mappa a tutta altezza a sinistra, diario che scorre a destra; su telefono mappa fissa in alto. */
+:root{
+  --bg:#F4F6F2; --panel:#FFFFFF; --ink:#16241D; --muted:#66756C; --line:#E4E9E2; --soft:#EEF3EC;
+  --sea:#BFDCE6; --land:#F4F2E8; --coast:#A3BFBB; --grid:rgba(40,80,90,.10);
+  --route:#EE6A3C; --route-ink:#fff; --accent:#245C45; --accent-ink:#fff; --danger:#C0392B; --sun:#F2B544;
+  --font-display:'Bricolage Grotesque','Segoe UI',system-ui,sans-serif;
+  --font-body:'Instrument Sans','Segoe UI',system-ui,sans-serif;
+  --font-mono:'JetBrains Mono',ui-monospace,Menlo,monospace;
+  --shadow:0 1px 2px rgba(16,36,29,.05),0 12px 28px -18px rgba(16,36,29,.35);
+  --mapw:minmax(0,1fr); --sidew:minmax(0,600px);
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html{background:var(--bg)}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 var(--font-body);-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+h1,h2,h3{font-family:var(--font-display);margin:0;text-wrap:balance;line-height:1.08;letter-spacing:-.02em}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* struttura */
+.app{display:grid;grid-template-columns:var(--mapw) var(--sidew);align-items:start;min-height:100vh}
+.mapcol{position:sticky;top:0;height:100vh;height:100dvh;padding:0}
+.side{min-width:0;padding-block:20px 48px;padding-left:max(28px,env(safe-area-inset-left,0px));padding-right:max(28px,env(safe-area-inset-right,0px))}
+.layout.story{grid-template-columns:minmax(0,1fr)}
+.layout.story .mapcol{display:none}
+.layout.story .side{width:100%;max-width:820px;margin:0 auto}
+
+/* mappa */
+.mapbox{position:relative;width:100%;height:100%;overflow:hidden;touch-action:none;cursor:grab;
+  background:radial-gradient(120% 90% at 30% 20%,#D4E8EE 0%,#BBD8E3 60%,#A9CDDA 100%)}
+.mapbox.picking{cursor:crosshair;box-shadow:inset 0 0 0 4px var(--route)}
+.mapbox:active{cursor:grabbing}
+#map{display:block;width:100%;height:100%;user-select:none}
+.mapctl{position:absolute;right:16px;top:max(16px,env(safe-area-inset-top,0px));display:flex;flex-direction:column;background:var(--panel);border-radius:12px;box-shadow:var(--shadow);overflow:hidden}
+.mapctl button{width:40px;height:40px;border:0;border-bottom:1px solid var(--line);background:transparent;cursor:pointer;font:500 18px var(--font-body);color:var(--ink)}
+.mapctl button:last-child{border-bottom:0}
+.mapctl button:hover{background:var(--soft)}
+.mapctl button.fit{font:600 10px var(--font-mono);letter-spacing:.06em}
+.mapbadge{position:absolute;left:max(16px,env(safe-area-inset-left,0px));bottom:16px;display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.9);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);padding:7px 12px 7px 8px;border-radius:99px;box-shadow:var(--shadow);font:600 13px var(--font-body)}
+.mapbadge i{width:24px;height:24px;border-radius:50%;background:var(--route);display:grid;place-items:center}
+.mapbadge i svg{width:14px;height:14px}
+.mapbadge span{color:var(--muted);font-weight:500}
+.pickbar{position:absolute;left:16px;right:72px;top:16px;background:var(--route);color:#fff;padding:10px 14px;border-radius:12px;font-weight:600;display:flex;gap:10px;justify-content:space-between;align-items:center;box-shadow:var(--shadow)}
+.pickbar[hidden]{display:none}
+.pickbar button{border:1px solid currentColor;background:transparent;border-radius:8px;padding:2px 10px;cursor:pointer;color:#fff}
+.t-sea{font:italic 500 13px var(--font-display);fill:#6E9AAA;letter-spacing:.16em}
+.t-city{font:500 12px var(--font-body);fill:#3D4D45;paint-order:stroke;stroke:rgba(255,255,255,.9);stroke-width:3px;stroke-linejoin:round}
+.t-grid{font:10px var(--font-mono);fill:#6E8A90}
+.pinnum{font:700 12px var(--font-body);fill:#fff;text-anchor:middle;dominant-baseline:central;pointer-events:none}
+.pinnum.f{fill:var(--route)}
+.t-stop{font:700 12.5px var(--font-body);fill:var(--ink);paint-order:stroke;stroke:#fff;stroke-width:4px;stroke-linejoin:round}
+.pin{cursor:pointer}
+@keyframes pulse{0%{r:18;opacity:.4}100%{r:34;opacity:0}}
+.vanpulse{animation:pulse 1.8s ease-out infinite;fill:var(--route)}
+.mapnote{font-size:12px;color:var(--muted);margin:28px 0 0}
+
+/* testata */
+.top{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;justify-content:space-between}
+.brand{font:700 19px var(--font-display);letter-spacing:-.01em;display:flex;align-items:center;gap:10px}
+.brand i{width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,#F48455,#E35A2C);display:grid;place-items:center;box-shadow:0 6px 14px -6px rgba(227,90,44,.7)}
+.brand i svg{width:18px;height:18px}
+.tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btn{border:1px solid var(--line);background:var(--panel);padding:8px 14px;border-radius:11px;cursor:pointer;font-weight:600;font-size:14px;min-height:38px;box-shadow:0 1px 2px rgba(16,36,29,.06);transition:box-shadow .15s,border-color .15s}
+.btn:hover{border-color:#C9D3C9;box-shadow:0 6px 14px -8px rgba(16,36,29,.35)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.route{background:var(--route);color:var(--route-ink);border-color:var(--route)}
+.btn.danger{color:var(--danger);border-color:#EBC3BE;background:transparent;box-shadow:none}
+.btn.ghost{background:transparent;box-shadow:none;border-color:transparent}
+.btn.sm{min-height:32px;padding:5px 12px;font-size:13px}
+select.btn{max-width:100%;padding-right:8px}
+.notice{margin:14px 0 0;padding:9px 12px;border-radius:12px;background:#FFF4E8;color:#8A5A2B;font-size:13px}
+
+/* copertina viaggio */
+.hero{position:relative;overflow:hidden;margin-top:18px;border-radius:24px;padding:26px 24px 104px;color:#fff;
+  background:radial-gradient(60% 70% at 85% 18%,rgba(255,214,140,.55) 0,rgba(255,214,140,0) 60%),linear-gradient(168deg,#173F31 0%,#245C45 45%,#4E8A64 100%);box-shadow:0 24px 40px -26px rgba(20,60,40,.8)}
+.hero:empty{display:none}
+.hero .kicker{font:500 11px var(--font-mono);letter-spacing:.16em;text-transform:uppercase;opacity:.85}
+.hero h1{font-size:clamp(28px,4.2vw,44px);margin:8px 0 6px;position:relative}
+.hero .sub{font-size:14px;opacity:.9}
+.hero .hnote{margin:10px 0 0;font-size:14px;opacity:.85;max-width:52ch}
+.stats{position:relative;z-index:1;display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.stat{display:flex;flex-direction:column;background:rgba(255,255,255,.14);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.18);border-radius:14px;padding:8px 14px;min-width:84px}
+.stat b{font:500 20px var(--font-mono);font-variant-numeric:tabular-nums;letter-spacing:-.03em}
+.stat span{font-size:10.5px;text-transform:uppercase;letter-spacing:.1em;opacity:.8}
+.scene{position:absolute;left:0;bottom:0;width:100%;height:90px;pointer-events:none}
+
+/* schede */
+.tabs{display:flex;gap:2px;align-items:center;margin:22px 0 18px;background:#E7ECE5;border-radius:14px;padding:4px;position:sticky;top:max(10px,env(safe-area-inset-top,0px));z-index:7}
+.tab{background:none;border:0;border-radius:10px;padding:8px 14px;cursor:pointer;font:600 14px var(--font-body);color:var(--muted)}
+.tab:hover{color:var(--ink)}
+.tab[aria-selected="true"]{background:var(--panel);color:var(--ink);box-shadow:0 2px 8px -3px rgba(16,36,29,.3)}
+.tabs .spacer{flex:1}
+
+/* tappe */
+.stops{list-style:none;margin:0;padding:0;position:relative;display:flex;flex-direction:column;gap:14px}
+.stops::before{content:"";position:absolute;left:16px;top:20px;bottom:20px;border-left:2px solid var(--line)}
+.stop{display:grid;grid-template-columns:34px minmax(0,1fr);gap:14px;cursor:pointer;position:relative}
+.node{width:34px;height:34px;border-radius:50%;background:var(--route);color:#fff;font:700 13px var(--font-body);display:grid;place-items:center;z-index:1;box-shadow:0 0 0 4px var(--bg),0 4px 10px -4px rgba(238,106,60,.8);margin-top:14px}
+.card,.dc{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px 18px;min-width:0;box-shadow:var(--shadow);transition:box-shadow .2s,border-color .2s}
+.stop.sel .card,.dcard.cur .dc{border-color:var(--route);box-shadow:0 0 0 4px rgba(238,106,60,.12),0 16px 30px -20px rgba(238,106,60,.6)}
+.meta,.dd{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;font-size:12px;color:var(--muted)}
+.date{font:500 11.5px var(--font-mono);text-transform:uppercase;letter-spacing:.05em;color:var(--route);background:rgba(238,106,60,.1);padding:2px 8px;border-radius:7px}
+.dd{font:500 11.5px var(--font-mono);text-transform:uppercase;letter-spacing:.05em}
+.chip{display:inline-flex;align-items:center;gap:5px;border-radius:99px;padding:2px 10px 2px 7px;font:600 12px var(--font-body);text-transform:none;letter-spacing:0;color:var(--accent);background:rgba(36,92,69,.09)}
+.chip svg{width:14px;height:14px;flex:none}
+.card h3,.dc h3{font-size:20px;margin-top:8px}
+.place{margin:3px 0 0;color:var(--muted);font-size:13.5px;overflow-wrap:anywhere}
+.coord{font-family:var(--font-mono);font-size:11px;opacity:.75}
+.note{margin:10px 0 0;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.6}
+.facts{margin-top:12px;display:flex;flex-wrap:wrap;gap:6px;font:500 12px var(--font-mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.facts span{background:var(--soft);padding:3px 9px;border-radius:8px}
+.strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:14px}
+.strip img,.strip .more{width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;cursor:zoom-in;background:var(--soft)}
+.strip img:first-child{grid-column:1/-1;aspect-ratio:16/10;border-radius:14px}
+.strip .more{display:grid;place-items:center;font:600 13px var(--font-mono);color:var(--accent);cursor:pointer}
+.actions{margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.actions a{font-size:13px;color:var(--accent);font-weight:600;text-decoration:none}
+.actions a:hover{text-decoration:underline}
+a.btn{color:var(--ink);text-decoration:none;display:inline-flex;align-items:center}
+.tabs .btn{white-space:nowrap}
+
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.gallery figure{margin:0;position:relative;aspect-ratio:1;border-radius:16px;overflow:hidden;background:var(--soft);cursor:zoom-in;box-shadow:var(--shadow)}
+.gallery img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .4s}
+.gallery figure:hover img{transform:scale(1.04)}
+.gallery figcaption{position:absolute;left:0;right:0;bottom:0;padding:24px 10px 8px;font-size:12px;font-weight:600;color:#fff;background:linear-gradient(transparent,rgba(8,20,14,.7));white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.empty{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:28px 24px;box-shadow:var(--shadow)}
+.empty h2{font-size:24px;margin-bottom:8px}
+.empty p{color:var(--muted);max-width:52ch;margin:0 0 16px}
+.empty .row{display:flex;flex-wrap:wrap;gap:8px}
+
+/* giorni */
+.dbar{position:sticky;top:calc(max(10px,env(safe-area-inset-top,0px)) + 56px);z-index:6;background:rgba(255,255,255,.9);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:20px;padding:14px 16px 10px;margin-bottom:18px;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:6px 16px;align-items:center;box-shadow:0 18px 36px -24px rgba(16,36,29,.55)}
+.dtrip{grid-column:1/-1;font:600 11px var(--font-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--accent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dbar .big{display:flex;align-items:baseline;gap:6px;font:600 13px var(--font-body);color:var(--muted)}
+.dbar .big i{font-style:normal}
+.dbar .big b{font:600 46px/.95 var(--font-display);color:var(--route);letter-spacing:-.04em;font-variant-numeric:tabular-nums;min-width:1.1ch}
+.dbar .big span{font:500 14px var(--font-mono);white-space:nowrap}
+.dbar .dmeta{display:flex;flex-direction:column;min-width:0}
+.dbar .dmeta b{font:700 16px/1.25 var(--font-display)}
+.dbar .dmeta b::first-letter{text-transform:uppercase}
+.dbar .dmeta span{font-size:12px;color:var(--muted)}
+.dctl{display:flex;gap:4px;background:var(--soft);border-radius:12px;padding:3px}
+.dctl button{width:34px;height:34px;border-radius:9px;border:0;background:transparent;cursor:pointer;font-size:15px;color:var(--ink)}
+.dctl button:hover{background:var(--panel)}
+.dctl button.play{background:var(--route);color:#fff}
+.dbar input[type=range]{grid-column:1/-1;width:100%;accent-color:var(--route);height:24px;margin:0}
+.days{display:flex;flex-direction:column;gap:12px}
+.dcard{display:grid;grid-template-columns:54px minmax(0,1fr);gap:12px;cursor:pointer;transition:opacity .3s}
+.dcard.next{opacity:.5}
+.dcard .dn{text-align:center;position:relative;padding-top:12px}
+.dcard .dn small{display:block;font:600 9.5px var(--font-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.dcard .dn b{font:600 28px/1.05 var(--font-display);letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.dcard .dn::after{content:"";position:absolute;left:50%;top:62px;bottom:-14px;border-left:2px solid var(--line)}
+.dcard.cur .dn b{color:var(--route)}
+.dcard.stay .dc,.dcard.gap .dc{padding:11px 16px;background:transparent;box-shadow:none;border-style:dashed}
+.stayline{font-size:14px;color:var(--muted);margin-top:2px}
+.stayline b{color:var(--ink);font-weight:600}
+.tbanner{position:relative;overflow:hidden;border-radius:22px;padding:22px 22px 92px;margin:22px 0 4px;color:#fff;
+  background:radial-gradient(60% 70% at 85% 18%,rgba(255,214,140,.5) 0,rgba(255,214,140,0) 60%),linear-gradient(168deg,#173F31 0%,#245C45 45%,#4E8A64 100%);box-shadow:0 22px 40px -26px rgba(20,60,40,.8)}
+.days>.tbanner:first-child{margin-top:0}
+.tb-k{font:500 11px var(--font-mono);letter-spacing:.16em;text-transform:uppercase;opacity:.85}
+.tbanner h2{font-size:clamp(24px,3.6vw,34px);margin:6px 0 6px}
+.tb-d{font:500 12px var(--font-mono);opacity:.9}
+.tbanner p{margin:10px 0 0;font-size:14.5px;line-height:1.6;max-width:56ch;white-space:pre-wrap;opacity:.92}
+
+/* racconto */
+.book{display:flex;flex-direction:column;gap:36px}
+.cover{position:relative;overflow:hidden;border-radius:26px;padding:36px 30px 120px;color:#fff;
+  background:radial-gradient(60% 70% at 85% 18%,rgba(255,214,140,.55) 0,rgba(255,214,140,0) 60%),linear-gradient(168deg,#173F31 0%,#245C45 45%,#4E8A64 100%);box-shadow:0 26px 44px -28px rgba(20,60,40,.85)}
+.cover .kicker{font:500 11px var(--font-mono);letter-spacing:.16em;text-transform:uppercase;opacity:.85}
+.cover h2{font-size:clamp(34px,6vw,58px);margin:12px 0 8px;letter-spacing:-.03em}
+.cover .when{font:500 13px var(--font-mono);opacity:.9}
+.cover p.intro{margin:18px 0 0;font-size:17px;line-height:1.7;max-width:56ch;white-space:pre-wrap;opacity:.95}
+.cover .scene{height:110px}
+.chap{display:flex;flex-direction:column;gap:12px}
+.chap .no{font:500 11px var(--font-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--route)}
+.chap h3{font-size:clamp(26px,4vw,36px);letter-spacing:-.025em}
+.chap .where{color:var(--muted);font-size:14px}
+.polaroid{margin:6px 0}
+.polaroid img{display:block;width:100%;aspect-ratio:16/10;object-fit:cover;border-radius:20px;cursor:zoom-in;box-shadow:0 24px 44px -26px rgba(16,36,29,.75)}
+.polaroid figcaption{font-size:13px;color:var(--muted);padding:8px 4px 0}
+.chap .text{font-size:17.5px;line-height:1.75;white-space:pre-wrap;overflow-wrap:anywhere;max-width:62ch}
+.chap .text.none{color:var(--muted);font-style:italic;font-size:15px}
+.chap .more{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
+.chap .more img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:14px;cursor:zoom-in;background:var(--soft)}
+.leg{font:500 12px var(--font-mono);color:var(--muted);display:flex;align-items:center;gap:12px}
+.leg::before,.leg::after{content:"";flex:1;border-top:1px solid var(--line)}
+.endcard{border:1px solid var(--line);background:var(--panel);border-radius:22px;padding:24px;box-shadow:var(--shadow)}
+.endcard h3{font-size:24px;margin-bottom:8px}
+.endcard p{margin:0 0 8px;font-size:16.5px;line-height:1.7;white-space:pre-wrap}
+.endcard .best{font-family:var(--font-display);font-size:19px}
+
+/* finestre */
+.overlay{position:fixed;inset:0;background:rgba(10,22,16,.5);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:50;
+  padding:max(12px,env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) max(12px,env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px))}
+.overlay.hide{display:none}
+.sheet{background:var(--panel);border-radius:22px;width:min(560px,100%);max-height:100%;overflow:auto;padding:24px;box-shadow:0 40px 80px -30px rgba(10,22,16,.6)}
+.sheet h2{font-size:24px;margin-bottom:16px}
+.fld{display:flex;flex-direction:column;gap:5px;margin-bottom:14px;min-width:0}
+.fld label{font-size:12px;font-weight:600;color:var(--muted)}
+.fld input,.fld select,.fld textarea{background:var(--bg);border:1px solid var(--line);border-radius:11px;padding:10px 12px;min-width:0;width:100%}
+.fld input:focus,.fld select:focus,.fld textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(36,92,69,.15)}
+.fld textarea{min-height:96px;resize:vertical}
+.fld small{color:var(--muted);font-size:12px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.coordrow{display:flex;gap:8px;flex-wrap:wrap}
+.coordrow input{flex:1 1 160px}
+.thumbs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.thumb{position:relative;width:76px;height:76px}
+.thumb img{width:100%;height:100%;object-fit:cover;border-radius:12px}
+.thumb button{position:absolute;top:-6px;right:-6px;width:22px;height:22px;border-radius:50%;border:0;background:var(--ink);color:#fff;cursor:pointer;font-size:13px;line-height:1}
+.foot{display:flex;gap:8px;justify-content:space-between;flex-wrap:wrap;margin-top:10px}
+.foot .grp{display:flex;gap:8px;flex-wrap:wrap}
+.err{color:var(--danger);font-size:13px;min-height:18px;margin:0 0 6px}
+.lb{background:rgba(6,12,9,.94);flex-direction:column;gap:12px}
+.lb img{max-width:100%;max-height:78vh;object-fit:contain;border-radius:10px}
+.lb .cap{color:#fff;font-size:14px;text-align:center}
+.lb .bar{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.lb .btn{background:rgba(255,255,255,.1);color:#fff;border-color:rgba(255,255,255,.2)}
+
+@media (max-width:1000px){
+  :root{--sidew:minmax(0,480px)}
+  .side{padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+}
+@media (max-width:760px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .mapcol{height:36vh;height:36svh;z-index:8;box-shadow:0 10px 24px -16px rgba(16,36,29,.5)}
+  .side{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+  .tabs{top:calc(36svh + 8px);overflow-x:auto}
+  .dbar{top:calc(36svh + 60px)}
+  .mapbadge{display:none}
+  .mapctl{right:10px;top:10px}
+  .mapctl button{width:36px;height:36px}
+  .layout.story .side{padding-top:20px}
+}
+@media (max-width:520px){
+  .two,.three{grid-template-columns:1fr}
+  .overlay{align-items:flex-end}
+  .sheet{border-radius:22px 22px 0 0}
+  .dbar{grid-template-columns:1fr auto}
+  .dbar .dmeta{grid-column:1/-1;order:3}
+  .dbar input[type=range]{order:4}
+  .dbar .big b{font-size:38px}
+  .dctl button{width:30px}
+  .hero{padding:22px 18px 96px}
+  .stat{min-width:0;padding:6px 10px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+/* ===== colori ===== */
+:root{--sea:#BDE8F1;--land:#FFF8EA;--coast:#7CC3D3;--route:#FF5E5B;--accent:#6C4AB6;--sun:#FFB547}
+html{background:#FFF6EF}
+body{background:
+  radial-gradient(42vw 42vw at 100% 0%,rgba(255,159,128,.55),transparent 70%),
+  radial-gradient(38vw 38vw at 55% 35%,rgba(255,214,120,.35),transparent 70%),
+  radial-gradient(45vw 45vw at 100% 70%,rgba(108,74,182,.28),transparent 70%),
+  radial-gradient(40vw 40vw at 60% 105%,rgba(43,163,184,.38),transparent 70%),
+  #FFF6EF;background-attachment:fixed}
+.mapbox{background:radial-gradient(120% 90% at 30% 20%,#CFF1F7 0%,#9EDCEB 60%,#7FCDE2 100%)}
+.t-sea{fill:#3E95AE}
+.mapcol{box-shadow:6px 0 30px -18px rgba(60,30,90,.5)}
+.brand i{background:linear-gradient(135deg,#FF8A5B,#FF4F7B)}
+.btn{background:rgba(255,255,255,.85)}
+.btn.primary{background:linear-gradient(135deg,#7B5BD6,#C2479A);border-color:transparent;color:#fff}
+.btn.route{background:linear-gradient(135deg,#FF8A5B,#FF4F7B);border-color:transparent;color:#fff}
+.notice{background:rgba(255,255,255,.75);color:#7A4A2B}
+.stat{background:rgba(25,10,45,.2);border-color:rgba(255,255,255,.25)}
+.hero h1,.tbanner h2,.cover h2{text-shadow:0 2px 14px rgba(20,8,40,.25)}
+.tabs{background:rgba(255,255,255,.6);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);box-shadow:0 8px 24px -16px rgba(60,30,90,.45)}
+.tab[aria-selected="true"]{background:linear-gradient(135deg,#FF8A5B,#FF4F7B);color:#fff;box-shadow:0 6px 14px -6px rgba(255,79,123,.7)}
+.node{background:linear-gradient(135deg,#FF8A5B,#FF4F7B);box-shadow:0 0 0 4px rgba(255,255,255,.9),0 6px 12px -4px rgba(255,79,123,.7)}
+.stops::before,.dcard .dn::after{border-left:2px dashed rgba(255,94,91,.35)}
+.card,.dc,.empty,.endcard{background:rgba(255,255,255,.92);border-color:rgba(255,255,255,.9);box-shadow:0 1px 2px rgba(60,30,90,.06),0 16px 32px -20px rgba(60,30,90,.4)}
+.stop.sel .card,.dcard.cur .dc{border-color:#FF5E5B;box-shadow:0 0 0 4px rgba(255,94,91,.15),0 18px 34px -18px rgba(255,79,123,.55)}
+.dcard.stay .dc,.dcard.gap .dc{background:rgba(255,255,255,.45);border-color:rgba(108,74,182,.25);box-shadow:none}
+.date{background:linear-gradient(135deg,rgba(255,138,91,.18),rgba(255,79,123,.18));color:#D93A55}
+.chip.k1{background:#FFE7DC;color:#C2491E}.chip.k2{background:#E3F6E8;color:#24804A}.chip.k3{background:#E0F3F7;color:#1A7F96}
+.chip.k4{background:#FFF1D1;color:#9A6500}.chip.k5{background:#ECE6FA;color:#5A3DA6}.chip.k6{background:#FDE3EC;color:#B6345F}
+.facts span{background:#F3EEFB;color:#5A3DA6}
+.facts span:nth-child(2){background:#E0F3F7;color:#1A7F96}
+.facts span:nth-child(3){background:#FFF1D1;color:#9A6500}
+.dbar{background:rgba(255,255,255,.82)}
+.dtrip{color:#6C4AB6}
+.dbar .big b{background:linear-gradient(135deg,#FF8A5B,#FF4F7B);-webkit-background-clip:text;background-clip:text;color:transparent}
+.dctl{background:rgba(108,74,182,.08)}
+.dctl button.play{background:linear-gradient(135deg,#FF8A5B,#FF4F7B)}
+.dbar input[type=range]{accent-color:#FF4F7B}
+.dcard.cur .dn b{color:#FF4F7B}
+.chap .no{color:#D93A55}
+.leg::before,.leg::after{border-top:1px dashed rgba(108,74,182,.3)}
+.actions a{color:#6C4AB6}
+.strip .more{background:#F3EEFB;color:#5A3DA6}
+
+/* ===== testata illustrata e mappa a scomparsa ===== */
+html{background:#EAF6FA}
+body{background:linear-gradient(180deg,#EAF6FA 0%,#FFF7EE 55%,#FFF1E4 100%);background-attachment:fixed}
+.scene-hero{position:relative;overflow:hidden;background:linear-gradient(180deg,#6CC3E6 0%,#A6DBEE 42%,#FFE6C6 70%,#FFD9AE 100%)}
+.scene-svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.scene-hero::after{content:"";position:absolute;left:0;right:0;bottom:0;height:70px;background:linear-gradient(180deg,rgba(234,246,250,0),#EAF6FA);pointer-events:none}
+.hero-inner{position:relative;z-index:1;max-width:1120px;margin:0 auto;padding-block:18px 190px;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+.scene-hero .brand{color:#0F3550}
+.scene-hero .btn{background:rgba(255,255,255,.75);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-color:rgba(255,255,255,.8)}
+.hero-title{margin-top:34px;max-width:640px}
+.wanda{font:800 clamp(46px,8.5vw,96px)/.92 var(--font-display);letter-spacing:-.045em;color:#0F3550}
+.wanda span{color:#FF5E5B;display:inline-block}
+.hero-title p{margin:14px 0 0;font-size:clamp(15px,2vw,18px);color:#1E4B66;font-weight:500}
+.app{display:block;min-height:0}
+.side{max-width:880px;margin:-90px auto 0;position:relative;z-index:2;padding-block:0 56px}
+.layout.story .side{max-width:880px}
+.hero{margin-top:12px}
+.tabs{top:max(10px,env(safe-area-inset-top,0px));overflow-x:auto}
+.dbar{top:calc(max(10px,env(safe-area-inset-top,0px)) + 58px)}
+.mapslot{position:relative;overflow:hidden}
+.mapslot.big{height:min(68vh,620px);border-radius:24px;box-shadow:0 24px 46px -26px rgba(16,50,70,.6);border:3px solid #fff}
+.mapslot.mini{grid-column:1/-1;height:200px;border-radius:14px;margin-top:4px}
+.mapslot.mini .mapbadge,.mapslot.mini .mapctl .fit{display:none}
+.mapslot.mini .mapctl{right:8px;top:8px}
+.mapslot.mini .mapctl button{width:30px;height:30px;font-size:15px}
+.maplegend{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.lg{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(255,255,255,.9);background:rgba(255,255,255,.85);border-radius:99px;padding:5px 12px 5px 5px;cursor:pointer;font:600 13px var(--font-body);box-shadow:0 6px 14px -10px rgba(60,30,90,.5)}
+.lg b{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#FF8A5B,#FF4F7B);color:#fff;font-size:12px}
+.lg.on{border-color:#FF5E5B;box-shadow:0 0 0 3px rgba(255,94,91,.18)}
+.pickwrap{width:min(1100px,100%);height:min(84vh,760px);border-radius:22px;overflow:hidden;box-shadow:0 40px 80px -30px rgba(0,0,0,.6)}
+.mapnote{display:none}
+@media (max-width:760px){
+  .hero-inner{padding-block:14px 150px}
+  .hero-title{margin-top:22px}
+  .side{margin-top:-60px}
+  .tabs{top:max(8px,env(safe-area-inset-top,0px))}
+  .dbar{top:calc(max(8px,env(safe-area-inset-top,0px)) + 56px)}
+  .mapslot.mini{display:none}
+  .mapslot.big{height:62vh}
+}
+.scene-hero .btn.primary{background:linear-gradient(135deg,#7B5BD6,#C2479A);color:#fff;border-color:transparent}
+.wanda{text-shadow:0 2px 0 rgba(255,255,255,.35)}
+
+/* ===== carosello viaggi ===== */
+.tripwrap{position:relative;margin-top:12px}
+.tripcar{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding:4px 6% 34px;-webkit-overflow-scrolling:touch}
+.tripcar::-webkit-scrollbar{display:none}
+.tripcar .hero{flex:0 0 88%;scroll-snap-align:center;margin-top:0;opacity:.6;transform:scale(.95);transition:transform .35s,opacity .35s;cursor:pointer}
+.tripcar .hero.on{opacity:1;transform:none;cursor:default}
+.tripcar.single{padding-inline:0}
+.tripcar.single .hero{flex-basis:100%;opacity:1;transform:none}
+.hero h2{font-size:clamp(28px,4.2vw,44px);margin:8px 0 6px;position:relative;text-shadow:0 2px 14px rgba(20,8,40,.25)}
+.carbtn{position:absolute;top:calc(50% - 40px);z-index:3;width:44px;height:44px;border-radius:50%;border:0;background:rgba(255,255,255,.92);box-shadow:0 8px 20px -8px rgba(40,20,70,.5);font:500 26px/1 var(--font-body);color:var(--ink);cursor:pointer;display:grid;place-items:center;padding-bottom:3px}
+.carbtn:hover{background:#fff}
+.carbtn.prev{left:-4px}.carbtn.next{right:-4px}
+.cardots{position:absolute;left:0;right:0;bottom:8px;display:flex;justify-content:center;gap:6px}
+.cdot{width:8px;height:8px;border-radius:99px;border:0;padding:0;background:rgba(108,74,182,.28);cursor:pointer;transition:width .25s,background .25s}
+.cdot.on{width:24px;background:linear-gradient(135deg,#FF8A5B,#FF4F7B)}
+.cover{scroll-margin-top:80px}
+@media (max-width:760px){.carbtn{display:none}.tripcar{padding-inline:5%}.tripcar .hero{flex-basis:90%}}
+
+/* ===== selezione rapida ===== */
+.carhead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:4px 6% 8px}
+.carhead span{font:600 13px var(--font-body);color:#1E4B66}
+.allbtn{display:inline-flex;align-items:center;gap:6px}
+.allbtn svg{width:15px;height:15px}
+.allsheet{width:min(520px,100%);display:flex;flex-direction:column;max-height:min(80vh,720px)}
+.allhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.allhead h2{margin:0}
+.alllist{overflow-y:auto;margin:0 -8px;padding:0 8px;display:flex;flex-direction:column;gap:4px}
+.allyear{font:600 11px var(--font-mono);letter-spacing:.14em;color:var(--muted);margin:12px 4px 4px;position:sticky;top:0;background:var(--panel);padding:4px 0;z-index:1}
+.allrow{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:1px solid transparent;background:transparent;border-radius:14px;padding:8px;cursor:pointer}
+.allrow:hover{background:var(--soft)}
+.allrow.on{border-color:rgba(255,94,91,.4);background:rgba(255,94,91,.06)}
+.allrow i{width:44px;height:44px;border-radius:12px;flex:none}
+.allrow span{display:flex;flex-direction:column;min-width:0;flex:1}
+.allrow b{font:600 15px var(--font-display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.allrow small{font-size:12px;color:var(--muted)}
+.allrow em{font:600 11px var(--font-body);font-style:normal;color:#fff;background:linear-gradient(135deg,#FF8A5B,#FF4F7B);border-radius:99px;padding:2px 8px}
+.allnone{color:var(--muted);padding:12px 4px}
+@media (max-width:760px){.carhead{margin-inline:5%}}
+
+/* ===== versione esterna ===== */
+#map{width:100%;height:100%;background:#CFEAF2}
+.leaflet-container{font-family:var(--font-body)}
+.mapctl,.mapbadge,.pickbar{z-index:1000}
+.mapslot.mini .leaflet-control-scale{display:none}
+.lwrap{background:none;border:0}
+.lpin{position:absolute;left:-14px;top:-14px;display:flex;align-items:center;gap:6px;white-space:nowrap;pointer-events:auto}
+.lpin b{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#FF8A5B,#FF4F7B);color:#fff;font:700 12px var(--font-body);display:grid;place-items:center;border:3px solid #fff;box-shadow:0 3px 8px rgba(0,0,0,.35);transition:transform .2s}
+.lpin span{font:700 12.5px var(--font-body);color:var(--ink);text-shadow:0 0 3px #fff,0 0 3px #fff,0 0 4px #fff,0 0 4px #fff}
+.lpin.f b{background:#fff;color:#FF5E5B;border-color:#FF5E5B}
+.lpin.f span{opacity:.6}
+.lpin.sel b{transform:scale(1.25);box-shadow:0 0 0 6px rgba(255,94,91,.28),0 3px 8px rgba(0,0,0,.35)}
+.lvan{position:absolute;left:-21px;top:-21px;width:42px;height:42px;border-radius:50%;background:#FF5E5B;border:3px solid #fff;display:grid;place-items:center;box-shadow:0 0 0 8px rgba(255,94,91,.25),0 4px 12px rgba(0,0,0,.4)}
+.lvan svg{width:22px;height:22px}
+.georesults{display:flex;flex-direction:column;gap:4px;margin-top:6px}
+.geo{display:flex;flex-direction:column;align-items:flex-start;text-align:left;border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:7px 10px;cursor:pointer}
+.geo:hover{border-color:#FF5E5B}
+.geo b{font-size:14px}.geo small{font-size:11.5px;color:var(--muted)}
+body.locked .tabs,body.locked #tripbar,body.locked .tools{display:none}
+body.locked .side{margin-top:-110px}
+.login{max-width:520px;margin:0 auto}
+.loginrow{display:flex;gap:8px;flex-wrap:wrap}
+.loginrow input{flex:1 1 220px;border:1px solid var(--line);border-radius:11px;padding:10px 12px;background:var(--bg)}
+</style>
+</head>
+<body>
+
+
+<header class="scene-hero">
+  <svg class="scene-svg" viewBox="0 0 1440 460" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+<defs><linearGradient id="seaG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#43B9D6"/><stop offset="1" stop-color="#1A7AA3"/></linearGradient>
+<linearGradient id="mtF" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#93B7D0"/><stop offset="1" stop-color="#B5CFDE"/></linearGradient>
+<linearGradient id="mtN" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4F7F9C"/><stop offset="1" stop-color="#78A3B9"/></linearGradient>
+<radialGradient id="sunG"><stop offset="0" stop-color="#FFF1C2"/><stop offset=".45" stop-color="#FFD98A" stop-opacity=".7"/><stop offset="1" stop-color="#FFD98A" stop-opacity="0"/></radialGradient></defs>
+<circle cx="1120" cy="180" r="170" fill="url(#sunG)"/><circle cx="1120" cy="180" r="62" fill="#FFE39A"/>
+<g fill="#fff" opacity=".85"><path d="M180 120a26 26 0 0 1 50-8a20 20 0 0 1 34 14h-90a16 16 0 0 1 6-6z"/><path d="M820 70a22 22 0 0 1 42-6a17 17 0 0 1 29 12h-78a14 14 0 0 1 7-6z"/></g>
+<g fill="none" stroke="#2C5873" stroke-width="2" stroke-linecap="round"><path d="M700 120q8-8 16 0q8-8 16 0"/><path d="M742 104q6-6 12 0q6-6 12 0"/></g>
+<g transform="translate(650 0)"><path d="M0 318L110 214L180 262L300 132L410 246L480 196L580 282L660 232L790 318Z" fill="url(#mtF)"/>
+<path d="M300 132L272 170L288 164L300 178L316 162L330 168Z" fill="#fff"/><path d="M110 214L92 236L104 232L114 242L126 230L134 234Z" fill="#fff"/><path d="M480 196L462 218L474 214L484 224L494 212L502 216Z" fill="#fff" opacity=".9"/>
+<path d="M0 330L80 262L160 302L250 226L360 318L440 276L540 330Z" fill="url(#mtN)"/>
+<path d="M250 226L230 252L244 248L254 258L264 246L274 250Z" fill="#fff" opacity=".9"/>
+</g><path d="M0 318L90 296L180 306L260 300L340 318Z" fill="#9CBFD2"/>
+<path d="M0 316H1440V460H0Z" fill="url(#seaG)"/>
+<path d="M0 317H1440" stroke="#fff" stroke-width="2" opacity=".55"/>
+<g fill="none" stroke="#fff" stroke-linecap="round" opacity=".75" stroke-width="2.5">
+<path d="M560 352q30-12 60 0t60 0t60 0"/><path d="M880 340q26-10 52 0t52 0t52 0"/><path d="M1180 360q30-12 60 0t60 0t60 0t60 0"/>
+<path d="M640 402q36-14 72 0t72 0t72 0t72 0"/><path d="M1020 420q36-14 72 0t72 0t72 0"/><path d="M420 440q40-16 80 0t80 0t80 0"/></g>
+<path d="M0 392Q170 352 360 384Q470 402 540 460H0Z" fill="#F5DBA8"/><path d="M0 392Q170 352 360 384Q470 402 540 460" fill="none" stroke="#fff" stroke-width="3" opacity=".7"/>
+<g stroke="#21445A" stroke-width="1" opacity=".55"><path d="M905 118L985 372M1015 118L985 372"/><path d="M640 182L702 404M712 182L702 404"/><path d="M1248 222L1262 356M1290 222L1262 356"/></g>
+<path d="M900 120Q960 70 1020 120Q960 92 900 120Z" fill="#FF5E5B"/><path d="M900 120Q960 70 1020 120" fill="none" stroke="#C43B48" stroke-width="2"/>
+<path d="M636 184Q676 152 716 184Q676 166 636 184Z" fill="#FFC233"/>
+<path d="M1246 224Q1268 206 1292 224Q1268 214 1246 224Z" fill="#8E5BD6"/>
+<g><ellipse cx="985" cy="384" rx="15" ry="3.5" fill="#FFB547"/><path d="M985 380L982 362" stroke="#21445A" stroke-width="3" stroke-linecap="round"/><circle cx="981" cy="357" r="3.5" fill="#21445A"/><path d="M968 386q-10-6-16 2M1000 386q8-8 16-2" stroke="#fff" stroke-width="2" fill="none"/></g>
+<g><ellipse cx="702" cy="414" rx="12" ry="3" fill="#FF8A5B"/><path d="M702 411L700 396" stroke="#21445A" stroke-width="2.6" stroke-linecap="round"/><circle cx="699" cy="392" r="3" fill="#21445A"/></g>
+<g opacity=".8"><ellipse cx="1262" cy="364" rx="8" ry="2" fill="#fff"/><path d="M1262 362L1261 352" stroke="#21445A" stroke-width="2" stroke-linecap="round"/></g>
+<g transform="translate(150 344) scale(1.5)" stroke="#1F3A4D" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"><path d="M0 22V7a3 3 0 0 1 3-3h26a11 11 0 0 1 9 6l5 12v4H0z" fill="#fff"/><path d="M0 16h43" stroke="#FF8A5B" stroke-width="3"/><path d="M7 8h11v6H7zM23 8h8l4 6H23z" fill="#BFE6F2"/><circle cx="10" cy="26" r="4.4" fill="#1F3A4D"/><circle cx="34" cy="26" r="4.4" fill="#1F3A4D"/></g>
+</svg>
+  <div class="hero-inner">
+    <div class="top">
+      <div class="brand"><i><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15V8a2 2 0 0 1 2-2h9a4 4 0 0 1 4 4v5"/><path d="M3 15h18v2H3z"/><circle cx="7.5" cy="18.5" r="1.5" fill="#fff"/><circle cx="16.5" cy="18.5" r="1.5" fill="#fff"/></svg></i>Diario del Van</div>
+      <div class="tools">
+        <select id="tripSel" class="btn" aria-label="Scegli viaggio" hidden></select>
+        <button class="btn" id="btnTripEdit" type="button">Modifica</button>
+        <button class="btn primary" id="btnTripNew" type="button">Nuovo viaggio</button>
+        <button class="btn" id="btnBackup" type="button" title="Scarica una copia di viaggi e note">Backup</button>
+        <button class="btn" id="btnOut" type="button">Esci</button>
+      </div>
+    </div>
+    <div class="hero-title"><h1 class="wanda">Wanda <span>in viaggio</span></h1><p>Il diario delle nostre uscite con il Boxlife 540</p></div>
+  </div>
+</header>
+<div class="app layout">
+  <main class="side">
+    <div id="notice"></div>
+    <section class="tripwrap" id="tripbar" aria-label="I vostri viaggi"></section>
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" id="tabStops" aria-selected="true">Tappe</button>
+      <button class="tab" role="tab" id="tabDays" aria-selected="false">Giorni</button>
+      <button class="tab" role="tab" id="tabStory" aria-selected="false">Racconto</button>
+      <button class="tab" role="tab" id="tabMap" aria-selected="false">Mappa</button>
+      <button class="tab" role="tab" id="tabPhotos" aria-selected="false">Foto</button>
+      <span class="spacer"></span>
+      <button class="btn route sm" id="btnStopNew" type="button">+ Tappa</button>
+    </div>
+    <div id="content"></div>
+  </main>
+</div>
+<div id="mapPark" hidden>
+      <div class="mapbox" id="mapbox">
+      <div id="map" role="application" aria-label="Mappa degli spostamenti"></div>
+      <div class="mapctl">
+        <button type="button" id="zin" aria-label="Ingrandisci">+</button>
+        <button type="button" id="zout" aria-label="Riduci">−</button>
+        <button type="button" id="zfit" class="fit" aria-label="Adatta al viaggio">FIT</button>
+        <button type="button" id="zsat" class="fit" aria-label="Vista satellite">SAT</button>
+      </div>
+      <div class="mapbadge"><i><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15V8a2 2 0 0 1 2-2h9a4 4 0 0 1 4 4v5"/><path d="M3 15h18v2H3z"/><circle cx="7.5" cy="18.5" r="1.5" fill="#fff"/><circle cx="16.5" cy="18.5" r="1.5" fill="#fff"/></svg></i>Wanda <span>Boxlife 540</span></div>
+      <div id="pickbar" class="pickbar" hidden><span>Tocca la mappa dove vuoi mettere la tappa</span><button type="button" id="pickCancel">Annulla</button></div>
+    </div>
+</div>
+<div class="overlay hide" id="ovAll"><div class="sheet allsheet"><div class="allhead"><h2>Tutti i viaggi</h2><button type="button" class="btn ghost sm" id="allClose">Chiudi</button></div><div class="fld"><input id="allQ" type="search" placeholder="Cerca per nome o luogo, es. Sardegna" aria-label="Cerca viaggio"></div><div id="allList" class="alllist"></div></div></div>
+<div class="overlay hide" id="ovPick"><div class="pickwrap" id="slotPick"></div></div>
+<div class="overlay hide" id="ovStop"><form class="sheet" id="fStop" autocomplete="off"></form></div>
+<div class="overlay hide" id="ovTrip"><form class="sheet" id="fTrip" autocomplete="off"></form></div>
+<div class="overlay hide lb" id="ovLb"></div>
+<datalist id="gaz"></datalist>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="config.js"></script>
+<script>
+(function(){
+'use strict';
+const KINDS=['Area sosta','Campeggio','Sosta libera','Agriturismo','Parcheggio','Solo passaggio'];
+const KICON={'Area sosta':'<path d="M3 16V9a2 2 0 0 1 2-2h9a4 4 0 0 1 4 4v5"/><path d="M3 16h18"/><circle cx="7.5" cy="18" r="1.6"/><circle cx="16.5" cy="18" r="1.6"/>','Campeggio':'<path d="M3 20L12 4l9 16z"/><path d="M12 20l-3-6h6z"/>','Sosta libera':'<path d="M12 3l5 8h-3l4 6H6l4-6H7z"/><path d="M12 17v4"/>','Agriturismo':'<path d="M4 20V10l8-6 8 6v10z"/><path d="M10 20v-6h4v6"/>','Parcheggio':'<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M10 16V8h3a2.5 2.5 0 0 1 0 5h-3"/>','Solo passaggio':'<path d="M5 21V4"/><path d="M5 4h12l-2 4 2 4H5"/>'};
+const GLOW='radial-gradient(60% 70% at 85% 16%,rgba(255,224,150,.6) 0,rgba(255,224,150,0) 60%),';
+const GRADS=[GLOW+'linear-gradient(155deg,#3D2C8D 0%,#8E3FA0 38%,#E0577A 72%,#F59E4C 100%)',GLOW+'linear-gradient(155deg,#0B3C5D 0%,#1E6F9F 40%,#2BA3B8 75%,#7FD3C3 100%)',GLOW+'linear-gradient(155deg,#16423C 0%,#2D7A5A 45%,#5DAA68 78%,#C8D96F 100%)',GLOW+'linear-gradient(155deg,#5A2A27 0%,#B2453A 40%,#E07A3F 75%,#F4C15D 100%)'];
+function gradFor(tid){const ts=tripsByDate();return GRADS[Math.max(0,ts.findIndex(t=>t.id===tid))%GRADS.length];}
+const KCOL={'Area sosta':'k1','Campeggio':'k2','Sosta libera':'k3','Agriturismo':'k4','Parcheggio':'k5','Solo passaggio':'k6'};
+const kindIcon=k=>KICON[k]?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+KICON[k]+'</svg>':'';
+// luoghi frequenti: nome, lat, lon, importante (appare sempre sulla mappa)
+const GAZ=[
+['Torino',45.07,7.69,1],['Milano',45.46,9.19,1],['Genova',44.41,8.93,1],['Venezia',45.44,12.33,1],['Trieste',45.65,13.77,0],['Bologna',44.49,11.34,1],['Firenze',43.77,11.26,1],['Roma',41.9,12.5,1],['Napoli',40.85,14.27,1],['Bari',41.12,16.87,1],['Palermo',38.12,13.36,1],['Cagliari',39.22,9.12,1],['Catania',37.5,15.09,0],['Reggio Calabria',38.11,15.65,0],['Pescara',42.46,14.21,0],['Ancona',43.62,13.52,0],['Perugia',43.11,12.39,0],
+['Courmayeur',45.79,6.97,0],['Cortina d\'Ampezzo',46.54,12.14,0],['Ortisei',46.57,11.67,0],['Bolzano',46.5,11.35,0],['Trento',46.07,11.12,0],['Sirmione',45.49,10.61,0],['Bellagio',45.99,9.26,0],['Verona',45.44,10.99,0],['Portofino',44.3,9.21,0],['Monterosso (Cinque Terre)',44.15,9.65,0],['Pisa',43.72,10.4,0],['Siena',43.32,11.33,0],['San Gimignano',43.47,11.04,0],['Pienza (Val d\'Orcia)',43.08,11.68,0],['Talamone',42.55,11.13,0],['Porto Ercole',42.39,11.21,0],['Orvieto',42.72,12.11,0],['Assisi',43.07,12.62,0],['Gubbio',43.35,12.58,0],['Rimini',44.06,12.57,0],['Ravenna',44.42,12.2,0],['Urbino',43.73,12.64,0],['Conero (Numana)',43.51,13.62,0],['Campo Imperatore',42.44,13.56,0],['L\'Aquila',42.35,13.4,0],['Sperlonga',41.26,13.43,0],['Pompei',40.75,14.49,0],['Amalfi',40.63,14.6,0],['Paestum',40.42,15.0,0],['Matera',40.67,16.6,0],['Alberobello',40.78,17.24,0],['Vieste (Gargano)',41.88,16.18,0],['Polignano a Mare',40.99,17.22,0],['Gallipoli',40.06,17.99,0],['Santa Maria di Leuca',39.8,18.36,0],['Otranto',40.15,18.49,0],['Tropea',38.68,15.9,0],['Scilla',38.25,15.72,0],['Taormina',37.85,15.29,0],['Siracusa',37.07,15.29,0],['Cefalù',38.04,14.02,0],['San Vito Lo Capo',38.18,12.73,0],['Alghero',40.56,8.32,0],['Cala Gonone',40.28,9.63,0],['Porto Cervo',41.14,9.54,0],['Villasimius',39.14,9.52,0],['Bonifacio (Corsica)',41.39,9.16,0]
+];
+const D2R=Math.PI/180;
+const mercY=lat=>Math.log(Math.tan(Math.PI/4+lat*D2R/2))/D2R;
+const unY=y=>(2*Math.atan(Math.exp(y*D2R))-Math.PI/2)/D2R;
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const fmtDate=(d,o)=>{try{return new Date(d+'T12:00:00').toLocaleDateString('it-IT',o||{day:'numeric',month:'short'})}catch(e){return d||''}};
+const fmtLong=d=>fmtDate(d,{day:'numeric',month:'long',year:'numeric'});
+function km(a,b){const R=6371,dl=(b.lat-a.lat)*D2R,dn=(b.lon-a.lon)*D2R;const x=Math.sin(dl/2)**2+Math.cos(a.lat*D2R)*Math.cos(b.lat*D2R)*Math.sin(dn/2)**2;return 2*R*Math.asin(Math.sqrt(x));}
+const nf=n=>Math.round(n).toLocaleString('it-IT');
+
+const S={calYear:null,trips:[],stops:[],tripId:null,tab:'stops',sel:null,loading:true,db:null,assets:null,canWrite:true,mode:'mem',view:null,userView:false,pick:false,dragged:false};
+try{S.tripId=localStorage.getItem('van.trip')}catch(e){}
+
+/* ---------- dati ---------- */
+const TRANSP='data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
+let sb=null;S.urls={};
+function upsertLocal(coll,id,data){const arr=S[coll];const row=Object.assign({id},data);const i=arr.findIndex(x=>x.id===id);if(i>=0)arr[i]=row;else arr.push(row);}
+function removeLocal(coll,id){S[coll]=S[coll].filter(x=>x.id!==id);}
+const store={
+  async put(coll,id,data){const{error}=await sb.from(coll).upsert({id,data,updated_at:new Date().toISOString()});if(error)throw error;upsertLocal(coll,id,data);signPhotos();},
+  async del(coll,id){const{error}=await sb.from(coll).delete().eq('id',id);if(error)throw error;removeLocal(coll,id);}
+};
+S.assets={
+  async upload(blob){const path=uid()+'.jpg';const{error}=await sb.storage.from('foto').upload(path,blob,{contentType:'image/jpeg',upsert:false});if(error)throw error;
+    const{data}=await sb.storage.from('foto').createSignedUrl(path,604800);if(data&&data.signedUrl)S.urls[path]=data.signedUrl;return{id:path};},
+  async delete(id){await sb.storage.from('foto').remove([id]);}
+};
+let signing=false;
+async function signPhotos(){
+  if(!sb||signing)return;const need=[];S.stops.forEach(s=>(s.photos||[]).forEach(p=>{if(p&&p.id&&!S.urls[p.id])need.push(p.id);}));
+  if(!need.length)return;signing=true;
+  try{for(let i=0;i<need.length;i+=100){const{data}=await sb.storage.from('foto').createSignedUrls(need.slice(i,i+100),604800);(data||[]).forEach(d=>{if(d&&d.signedUrl&&d.path)S.urls[d.path]=d.signedUrl;});}}catch(e){}
+  signing=false;renderAll();
+}
+const curTrip=()=>S.trips.find(t=>t.id===S.tripId)||null;
+function tripStops(){
+  return S.stops.filter(s=>s.tripId===S.tripId).sort((a,b)=>(a.date||'').localeCompare(b.date||'')||(a.createdAt||0)-(b.createdAt||0));
+}
+function ensureTrip(){
+  if(!S.trips.length){S.tripId=null;return;}
+  if(!S.trips.some(t=>t.id===S.tripId)){
+    const sorted=[...S.trips].sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));S.tripId=sorted[0].id;
+  }
+}
+
+/* ---------- mappa (Leaflet) ---------- */
+let LM=null,layer=null,vanMk=null;const base={};
+const VAN_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15V8a2 2 0 0 1 2-2h9a4 4 0 0 1 4 4v5"/><path d="M3 15h18v2H3z"/><circle cx="7.5" cy="18.5" r="1.5" fill="#fff"/><circle cx="16.5" cy="18.5" r="1.5" fill="#fff"/></svg>';
+function initMap(){
+  if(LM||!window.L)return;
+  LM=L.map('map',{zoomControl:false,worldCopyJump:true}).setView([42.3,12.5],6);
+  base.map=L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{maxZoom:19,subdomains:'abcd',attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'}).addTo(LM);
+  base.sat=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'Immagini &copy; Esri'});
+  L.control.scale({imperial:false,position:'bottomright'}).addTo(LM);
+  layer=L.layerGroup().addTo(LM);
+  LM.on('click',e=>{if(S.pick)finishPick({lat:e.latlng.lat,lon:e.latlng.lng});});
+  LM.on('dragstart',()=>{S.userView=true;});
+}
+function fitTrip(){
+  if(!LM)return;const ll=tripStops().map(s=>[s.lat,s.lon]);
+  if(ll.length>1)LM.fitBounds(ll,{padding:[48,48],maxZoom:12,animate:false});
+  else if(ll.length===1)LM.setView(ll[0],11,{animate:false});
+  else LM.setView([42.3,12.5],6,{animate:false});
+}
+function renderMap(){
+  if(!LM)return;layer.clearLayers();
+  const st=tripStops();const dm=S.tab==='days'&&S.dayStopIdx!=null&&st.length;
+  const k=dm?Math.min(S.dayStopIdx,st.length-1):st.length-1;const ll=st.map(s=>[s.lat,s.lon]);
+  if(ll.length>1){
+    if(dm&&k<ll.length-1)L.polyline(ll.slice(k),{color:'#FF5E5B',weight:3,opacity:.7,dashArray:'2 9',lineCap:'round',interactive:false}).addTo(layer);
+    if(k>0){const d=ll.slice(0,k+1);L.polyline(d,{color:'#fff',weight:9,opacity:.95,interactive:false}).addTo(layer);L.polyline(d,{color:'#FF5E5B',weight:4.5,interactive:false}).addTo(layer);}
+  }
+  st.forEach((s,i)=>{const fut=dm&&i>k,sel=s.id===S.sel&&!dm;
+    const ic=L.divIcon({className:'lwrap',html:'<div class="lpin'+(fut?' f':'')+(sel?' sel':'')+'"><b>'+(i+1)+'</b><span>'+esc((s.place||s.title).split(' (')[0])+'</span></div>',iconSize:[0,0]});
+    L.marker([s.lat,s.lon],{icon:ic,zIndexOffset:sel?1000:0,title:s.title}).on('click',()=>{if(!S.pick)selectStop(s.id,true);}).addTo(layer);});
+  if(dm&&S.vanPos){
+    if(!vanMk)vanMk=L.marker([S.vanPos.lat,S.vanPos.lon],{icon:L.divIcon({className:'lwrap',html:'<div class="lvan">'+VAN_SVG+'</div>',iconSize:[0,0]}),zIndexOffset:3000,interactive:false});
+    vanMk.setLatLng([S.vanPos.lat,S.vanPos.lon]);vanMk.addTo(layer);
+  }
+  if(!S.view&&!S.userView){fitTrip();S.view=1;}
+}
+let raf=0;const reMap=()=>{if(raf)return;raf=requestAnimationFrame(()=>{raf=0;renderMap();});};
+function focusStop(s){if(!LM)return;S.userView=true;S.view=1;LM.setView([s.lat,s.lon],Math.max(LM.getZoom(),12));renderMap();}
+function mapEvents(){
+  $('#zin').onclick=()=>{S.userView=true;LM&&LM.zoomIn();};$('#zout').onclick=()=>{S.userView=true;LM&&LM.zoomOut();};
+  $('#zfit').onclick=()=>{S.userView=false;S.view=null;renderMap();};
+  $('#zsat').onclick=()=>{if(!LM)return;const sat=LM.hasLayer(base.sat);if(sat){LM.removeLayer(base.sat);base.map.addTo(LM);}else{LM.removeLayer(base.map);base.sat.addTo(LM);}$('#zsat').textContent=sat?'SAT':'MAPPA';};
+  $('#pickCancel').onclick=()=>finishPick(null);
+  window.addEventListener('resize',()=>{if(LM)LM.invalidateSize();});
+}
+
+/* ---------- elenco e pagina ---------- */
+function selectStop(id,fromMap){S.sel=id;renderMap();renderContent();
+  if(fromMap){const el=document.querySelector(`.stop[data-id="${CSS.escape(id)}"]`);if(el)el.scrollIntoView({block:'center',behavior:'smooth'});}
+  else{const s=S.stops.find(x=>x.id===id);if(s)focusStop(s);}}
+function photoUrl(p){return (p&&S.urls[p.id])||TRANSP;}
+function renderTop(){
+  const sel=$('#tripSel');sel.innerHTML=S.trips.length?[...S.trips].sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)).map(t=>`<option value="${esc(t.id)}"${t.id===S.tripId?' selected':''}>${esc(t.name)}</option>`).join(''):'<option>Nessun viaggio</option>';
+  sel.disabled=!S.trips.length;$('#btnTripEdit').hidden=!S.trips.length;
+  $('#btnStopNew').hidden=!S.trips.length;
+  const w=S.canWrite;$('#btnTripNew').hidden=!w;$('#btnStopNew').hidden=!w||!S.trips.length;
+  const tb=$('#tripbar');const ts=tripsByDate();
+  if(!ts.length){tb.innerHTML='';return;}
+  let o=ts.length>1?'<div class="carhead"><span>I vostri viaggi</span><button type="button" class="btn sm allbtn" id="btnAll"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Tutti i viaggi · '+ts.length+'</button></div>':'';
+  o+='<div class="tripcar'+(ts.length===1?' single':'')+'" id="tripcar">';
+  ts.forEach((t,i)=>{
+    const st=stopsOf(t.id);let dist=0;for(let k=1;k<st.length;k++)dist+=km(st[k-1],st[k]);
+    const nights=st.reduce((a,s)=>a+(+s.nights||0),0),cost=st.reduce((a,s)=>a+(+s.cost||0),0),ph=st.reduce((a,s)=>a+((s.photos||[]).length),0);
+    const range=st.length?(st[0].date===st[st.length-1].date?fmtLong(st[0].date):fmtDate(st[0].date,{day:'numeric',month:'short'})+' – '+fmtLong(st[st.length-1].date)):'Ancora nessuna tappa';
+    o+=`<article class="hero${t.id===S.tripId?' on':''}" data-trip="${esc(t.id)}" style="background:${GRADS[i%GRADS.length]}"><div class="kicker">Viaggio ${i+1} di ${ts.length} · Wanda</div><h2>${esc(t.name)}</h2><div class="sub">${esc(range)}</div>${t.notes?`<p class="hnote">${esc(t.notes)}</p>`:''}<div class="stats"><div class="stat"><b>${st.length}</b><span>tappe</span></div><div class="stat"><b>${nights}</b><span>notti</span></div><div class="stat" title="Somma delle distanze in linea d'aria tra tappe consecutive"><b>${nf(dist)}</b><span>km</span></div><div class="stat"><b>${nf(cost)}€</b><span>spesa</span></div><div class="stat"><b>${ph}</b><span>foto</span></div></div>${SCENE}</article>`;
+  });
+  o+='</div>';
+  if(ts.length>1)o+='<button type="button" class="carbtn prev" id="carPrev" aria-label="Viaggio precedente">‹</button><button type="button" class="carbtn next" id="carNext" aria-label="Viaggio successivo">›</button><div class="cardots">'+ts.map(t=>`<button type="button" class="cdot${t.id===S.tripId?' on':''}" data-dot="${esc(t.id)}" aria-label="${esc(t.name)}"></button>`).join('')+'</div>';
+  tb.innerHTML=o;
+  const car=$('#tripcar');const cards=[...car.querySelectorAll('.hero')];
+  const center=(c,smooth)=>{const left=c.offsetLeft-(car.clientWidth-c.clientWidth)/2;if(smooth)car.scrollTo({left,behavior:'smooth'});else car.scrollLeft=left;};
+  const cur=car.querySelector('.hero.on');if(cur)center(cur,false);
+  let tmo;car.addEventListener('scroll',()=>{clearTimeout(tmo);tmo=setTimeout(()=>{const mid=car.scrollLeft+car.clientWidth/2;let best=null,bd=1e9;cards.forEach(c=>{const d=Math.abs(c.offsetLeft+c.clientWidth/2-mid);if(d<bd){bd=d;best=c;}});if(best)setTrip(best.dataset.trip);},140);},{passive:true});
+  const step=d=>{const i=cards.findIndex(c=>c.dataset.trip===S.tripId);const n=cards[Math.max(0,Math.min(cards.length-1,i+d))];if(n)center(n,true);};
+  if(ts.length>1){$('#btnAll').onclick=openAll;$('#carPrev').onclick=()=>step(-1);$('#carNext').onclick=()=>step(1);
+    tb.querySelectorAll('[data-dot]').forEach(d=>d.onclick=()=>{const c=cards.find(x=>x.dataset.trip===d.dataset.dot);if(c)center(c,true);});}
+  cards.forEach(c=>c.addEventListener('click',()=>{if(c.dataset.trip!==S.tripId)center(c,true);}));
+}
+function goTrip(id){
+  setTrip(id);const car=$('#tripcar');if(!car)return;const c=car.querySelector('.hero[data-trip="'+CSS.escape(id)+'"]');
+  if(c)car.scrollTo({left:c.offsetLeft-(car.clientWidth-c.clientWidth)/2,behavior:'smooth'});
+  const tw=$('#tripbar');if(tw.getBoundingClientRect().top<0)window.scrollTo({top:tw.getBoundingClientRect().top+window.scrollY-10,behavior:'smooth'});
+}
+function openAll(){
+  const ov=$('#ovAll');ov.classList.remove('hide');
+  const ts=tripsByDate();const idx=new Map(ts.map((t,i)=>[t.id,i]));
+  const rows=ts.map(t=>{const st=stopsOf(t.id);let dist=0;for(let k=1;k<st.length;k++)dist+=km(st[k-1],st[k]);
+    return{t,st,dist,year:st.length?st[0].date.slice(0,4):'Senza date',first:st.length?st[0].date:'',text:(t.name+' '+st.map(s=>(s.place||'')+' '+s.title).join(' ')).toLowerCase()};})
+    .sort((a,b)=>(b.first||'0').localeCompare(a.first||'0'));
+  const draw=q=>{
+    q=(q||'').trim().toLowerCase();const list=rows.filter(r=>!q||r.text.includes(q));
+    let o='',yr=null;
+    if(!list.length)o='<p class="allnone">Nessun viaggio trovato.</p>';
+    list.forEach(r=>{if(r.year!==yr){yr=r.year;o+='<div class="allyear">'+esc(yr)+'</div>';}
+      const st=r.st,range=st.length?fmtDate(st[0].date,{day:'numeric',month:'short'})+(st[st.length-1].date!==st[0].date?' – '+fmtDate(st[st.length-1].date,{day:'numeric',month:'short'}):''):'nessuna tappa';
+      o+='<button type="button" class="allrow'+(r.t.id===S.tripId?' on':'')+'" data-go="'+esc(r.t.id)+'"><i style="background:'+GRADS[idx.get(r.t.id)%GRADS.length]+'"></i><span><b>'+esc(r.t.name)+'</b><small>'+esc(range)+' · '+st.length+(st.length===1?' tappa':' tappe')+' · '+nf(r.dist)+' km</small></span>'+(r.t.id===S.tripId?'<em>ora</em>':'')+'</button>';});
+    $('#allList').innerHTML=o;
+    $('#allList').querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{ov.classList.add('hide');goTrip(b.dataset.go);});
+  };
+  $('#allQ').value='';draw('');$('#allQ').oninput=e=>draw(e.target.value);
+  setTimeout(()=>{try{$('#allQ').focus()}catch(e){}},40);
+}
+function setTrip(id){
+  if(!id||id===S.tripId)return;
+  S.tripId=id;try{localStorage.setItem('van.trip',id)}catch(e){}
+  S.sel=null;S.view=null;S.userView=false;S.vanPos=null;S.dayStopIdx=null;S.vanAnim++;
+  document.querySelectorAll('#tripcar .hero').forEach(c=>c.classList.toggle('on',c.dataset.trip===id));
+  document.querySelectorAll('.cdot').forEach(c=>c.classList.toggle('on',c.dataset.dot===id));
+  $('#tripSel').value=id;
+  if(S.tab==='days'&&S.all){const r=S.all.ranges.find(r=>r.t.id===id);if(r){goDay(r.start,true);S.lock=Date.now()+1800;return;}}
+  if(S.tab==='story'){const el=document.querySelector('.cover[data-trip="'+CSS.escape(id)+'"]');if(el){el.scrollIntoView({behavior:'smooth',block:'start'});return;}}
+  renderContent();renderMap();
+}
+function placeMap(el){const mb=$('#mapbox');const dest=el||$('#mapPark');if(mb.parentNode!==dest){dest.appendChild(mb);if(LM)setTimeout(()=>{LM.invalidateSize();if(!S.userView){S.view=null;}renderMap();},30);}}
+function renderMapTab(c){
+  const st=tripStops();
+  c.innerHTML='<div class="mapslot big" id="slotBig"></div><div class="maplegend">'+st.map((s,i)=>'<button type="button" class="lg'+(s.id===S.sel?' on':'')+'" data-lg="'+esc(s.id)+'"><b>'+(i+1)+'</b>'+esc(s.title)+'</button>').join('')+'</div>';
+  placeMap($('#slotBig'));if(!S.userView)S.view=null;
+  c.querySelectorAll('[data-lg]').forEach(b=>b.onclick=()=>{const s=S.stops.find(x=>x.id===b.dataset.lg);if(!s)return;S.sel=s.id;c.querySelectorAll('.lg').forEach(x=>x.classList.toggle('on',x===b));focusStop(s);});
+  requestAnimationFrame(renderMap);
+}
+function renderContent(){
+  const c=$('#content');
+  $('#tabStops').setAttribute('aria-selected',S.tab==='stops');$('#tabPhotos').setAttribute('aria-selected',S.tab==='photos');$('#tabStory').setAttribute('aria-selected',S.tab==='story');document.querySelector('.layout').classList.toggle('story',S.tab==='story');$('#tabDays').setAttribute('aria-selected',S.tab==='days');$('#tabMap').setAttribute('aria-selected',S.tab==='map');if(S.tab!=='days')stopPlay();if(!S.pick)placeMap(null);
+  if(S.loading){c.innerHTML='<div class="empty"><h2>Carico il diario…</h2><p>Un attimo, recupero i tuoi viaggi.</p></div>';return;}
+  if(S.tab==='days'&&hasStops()){renderDays(c);return;}
+  if(!S.trips.length){
+    c.innerHTML=`<div class="empty"><h2>Il primo viaggio</h2><p>Crea un viaggio, poi aggiungi le tappe con data, luogo, note e foto. Le tappe compaiono sulla mappa unite dal percorso.</p><div class="row">${S.canWrite?'<button class="btn primary" id="emNew" type="button">Crea il primo viaggio</button>':''}${S.canWrite?'<button class="btn" id="emDemo" type="button">Vedi un viaggio d\'esempio</button>':''}</div></div>`;
+    const a=$('#emNew');if(a)a.onclick=()=>openTrip(null);const b=$('#emDemo');if(b)b.onclick=loadDemo;return;
+  }
+  if(S.tab==='story'&&hasStops()){renderStory(c);return;}
+  if(S.tab==='map'){renderMapTab(c);return;}
+  const st=tripStops();
+  if(!st.length){c.innerHTML=`<div class="empty"><h2>Nessuna tappa</h2><p>Aggiungi la prima sosta del viaggio: puoi scegliere il luogo da un elenco, incollare le coordinate o toccare la mappa.</p>${S.canWrite?'<button class="btn route" id="emStop" type="button">Aggiungi la prima tappa</button>':''}</div>`;const b=$('#emStop');if(b)b.onclick=()=>openStop(null);return;}
+  if(S.tab==='photos'){
+    const items=[];st.forEach(s=>(s.photos||[]).forEach((p,i)=>items.push({s,p,i})));
+    if(!items.length){c.innerHTML='<div class="empty"><h2>Nessuna foto</h2><p>Apri una tappa con “Modifica” e aggiungi le foto: qui compaiono tutte insieme.</p></div>';return;}
+    c.innerHTML='<div class="gallery">'+items.map((x,k)=>`<figure data-k="${k}"><img loading="lazy" src="${esc(photoUrl(x.p))}" alt="${esc(x.s.title)}"><figcaption>${esc(x.s.title)}</figcaption></figure>`).join('')+'</div>';
+    c.querySelectorAll('figure').forEach(f=>f.onclick=()=>openLb(items.map(x=>({src:photoUrl(x.p),cap:x.s.title+' · '+fmtDate(x.s.date),sid:x.s.id,pid:x.p.id})),+f.dataset.k));
+    return;
+  }
+  c.innerHTML='<ol class="stops">'+st.map((s,i)=>{
+    const prev=i?km(st[i-1],s):0,ph=s.photos||[];
+    return `<li class="stop${s.id===S.sel?' sel':''}" data-id="${esc(s.id)}"><div class="node">${i+1}</div><div class="card">
+      <div class="meta"><span class="date">${esc(fmtDate(s.date,{weekday:'short',day:'numeric',month:'short'}))}</span><span class="chip ${KCOL[s.kind]||''}">${kindIcon(s.kind)}${esc(s.kind||'')}</span></div>
+      <h3>${esc(s.title)}</h3>
+      <p class="place">${esc(s.place||'')} <span class="coord">${s.lat.toFixed(4)}, ${s.lon.toFixed(4)}</span></p>
+      ${s.note?`<p class="note">${esc(s.note)}</p>`:''}
+      <div class="facts">${+s.nights?`<span>${s.nights} ${+s.nights===1?'notte':'notti'}</span>`:'<span>solo passaggio</span>'}${+s.cost?`<span>${nf(s.cost)} €</span>`:''}${i?`<span>+${nf(prev)} km</span>`:'<span>partenza</span>'}</div>
+      ${ph.length?`<div class="strip">${ph.slice(0,4).map((p,k)=>`<img loading="lazy" data-ph="${k}" src="${esc(photoUrl(p))}" alt="">`).join('')}${ph.length>4?`<div class="more" data-ph="4">+${ph.length-4}</div>`:''}</div>`:''}
+      <div class="actions">${S.canWrite?'<button class="btn sm" data-edit type="button">Modifica</button>':''}<button class="btn sm" data-onmap type="button">Sulla mappa</button><a href="https://www.openstreetmap.org/?mlat=${s.lat}&mlon=${s.lon}#map=14/${s.lat}/${s.lon}" target="_blank" rel="noopener">Apri su OpenStreetMap</a></div>
+    </div></li>`;}).join('')+'</ol>';
+  c.querySelectorAll('.stop').forEach(el=>{const id=el.dataset.id;
+    el.onclick=e=>{if(e.target.closest('a,[data-edit],[data-ph],[data-onmap]'))return;selectStop(id,false);};
+    const om=el.querySelector('[data-onmap]');if(om)om.onclick=()=>{const s=S.stops.find(x=>x.id===id);S.sel=id;S.tab='map';S.userView=false;S.view=null;renderAll();if(s)focusStop(s);window.scrollTo({top:document.querySelector('.tabs').getBoundingClientRect().top+window.scrollY-20,behavior:'smooth'});};
+    const ed=el.querySelector('[data-edit]');if(ed)ed.onclick=()=>openStop(id);
+    el.querySelectorAll('[data-ph]').forEach(im=>im.onclick=()=>{const s=S.stops.find(x=>x.id===id);openLb((s.photos||[]).map(p=>({src:photoUrl(p),cap:s.title+' · '+fmtDate(s.date),sid:s.id,pid:p.id})),+im.dataset.ph);});
+  });
+}
+function renderAll(){ensureTrip();renderTop();renderContent();renderMap();
+  $('#gaz').innerHTML=GAZ.map(g=>`<option value="${esc(g[0])}"></option>`).join('');}
+$('#tripSel').onchange=e=>{S.tripId=e.target.value;try{localStorage.setItem('van.trip',S.tripId)}catch(x){}S.sel=null;S.view=null;S.userView=false;renderAll();};
+const setTab=t=>{S.tab=t;if(t==='days')S.enterDays=true;renderContent();if(t!=='story'){if(!S.userView)S.view=null;reMap();}};
+$('#tabStops').onclick=()=>setTab('stops');$('#tabPhotos').onclick=()=>setTab('photos');$('#tabStory').onclick=()=>setTab('story');$('#tabDays').onclick=()=>setTab('days');$('#tabMap').onclick=()=>setTab('map');
+$('#btnStopNew').onclick=()=>openStop(null);
+$('#btnTripNew').onclick=()=>openTrip(null);
+$('#btnTripEdit').onclick=()=>openTrip(curTrip());
+
+/* ---------- giorno per giorno e racconto (tutti i viaggi) ---------- */
+const stopsOf=tid=>S.stops.filter(s=>s.tripId===tid).sort((a,b)=>(a.date||'').localeCompare(b.date||'')||(a.createdAt||0)-(b.createdAt||0));
+const hasStops=()=>S.stops.some(s=>S.trips.some(t=>t.id===s.tripId));
+function tripsByDate(){const f=id=>{const s=stopsOf(id);return s.length?s[0].date:'9999';};return[...S.trips].sort((a,b)=>f(a.id).localeCompare(f(b.id)));}
+const SCENE='<svg class="scene" viewBox="0 0 600 120" preserveAspectRatio="xMidYMax slice" aria-hidden="true"><circle cx="470" cy="48" r="30" fill="#FFF4CC" opacity=".95"/><path d="M0 120V82L70 50L125 82L185 36L265 92L335 56L425 104L485 76L600 104V120Z" fill="#fff" opacity=".28"/><path d="M0 120V98L90 72L160 96L240 68L330 98L440 70L600 110V120Z" fill="#fff" opacity=".45"/><path d="M0 114H600" stroke="#fff" stroke-width="3" stroke-dasharray="14 11" opacity=".85"/></svg>';
+function daysOf(st){
+  const add=(d,n)=>{const x=new Date(d+'T12:00:00Z');x.setUTCDate(x.getUTCDate()+n);return x.toISOString().slice(0,10);};
+  const span=s=>Math.max(1,+s.nights||0);
+  let end=st[0].date;st.forEach(s=>{const e=add(s.date,span(s)-1);if(e>end)end=e;});
+  const out=[];let d=st[0].date,n=0;
+  while(d<=end&&n<400){
+    let idx=-1;st.forEach((s,i)=>{if(s.date<=d&&d<add(s.date,span(s)))idx=i;});
+    let kind='start',night=0;
+    if(idx<0){st.forEach((s,i)=>{if(s.date<d)idx=i;});kind='gap';}
+    else if(st[idx].date!==d){kind='stay';night=Math.round((new Date(d+'T12:00:00Z')-new Date(st[idx].date+'T12:00:00Z'))/86400000)+1;}
+    out.push({date:d,idx,kind,night,s:st[idx]});d=add(d,1);n++;
+  }
+  return out;
+}
+function buildAll(){
+  const items=[],dayKs=[],ranges=[];
+  const ts=tripsByDate().filter(t=>stopsOf(t.id).length);
+  ts.forEach((t,ti)=>{
+    const st=stopsOf(t.id),ds=daysOf(st);let dist=0;for(let i=1;i<st.length;i++)dist+=km(st[i-1],st[i]);
+    const first=dayKs.length;
+    items.push({type:'trip',t,ti,n:ts.length,days:ds.length,dist,first:ds[0].date,last:ds[ds.length-1].date,d:first});
+    ds.forEach((d,i)=>{items.push(Object.assign({type:'day',t,ti,i,total:ds.length,st},d));dayKs.push(items.length-1);});
+    ranges.push({start:first,end:dayKs.length-1,t});
+  });
+  return{items,dayKs,ranges,ts};
+}
+let playT=null;
+function stopPlay(){if(playT){clearInterval(playT);playT=null;}const b=document.querySelector('.dctl .play');if(b)b.textContent='▶';}
+function animVan(to){
+  const from=S.vanPos||to;const t0=performance.now(),D=700;const id=++S.vanAnim;let panned=false;
+  (function f(now){if(id!==S.vanAnim)return;const k=Math.min(1,(now-t0)/D),e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
+    S.vanPos={lat:from.lat+(to.lat-from.lat)*e,lon:from.lon+(to.lon-from.lon)*e};
+    if(vanMk)vanMk.setLatLng([S.vanPos.lat,S.vanPos.lon]);
+    if(LM&&!panned&&k>.2&&!LM.getBounds().pad(-0.12).contains([to.lat,to.lon])){panned=true;LM.panTo([to.lat,to.lon]);}
+    if(k<1)requestAnimationFrame(f);})(t0);
+}
+S.vanAnim=0;S.dayCur=0;S.dayStopIdx=null;S.vanPos=null;S.all=null;
+function updateDay(i){
+  const A=S.all;if(!A||!A.dayKs.length)return;i=Math.max(0,Math.min(A.dayKs.length-1,i));
+  const it=A.items[A.dayKs[i]],rg=A.ranges[it.ti];
+  if(it.t.id!==S.tripId){S.tripId=it.t.id;try{localStorage.setItem('van.trip',S.tripId)}catch(e){}S.view=null;S.userView=false;S.vanPos=null;S.dayStopIdx=null;S.vanAnim++;renderTop();}
+  const first=S.dayCur!==i||S.dayStopIdx==null;S.dayCur=i;
+  const bar=document.querySelector('.dbar');if(!bar)return;
+  const st=it.st;let dist=0;for(let k=1;k<=it.idx;k++)dist+=km(st[k-1],st[k]);
+  bar.querySelector('#dTrip').textContent='Viaggio '+(it.ti+1)+' di '+A.ts.length+' · '+it.t.name;
+  bar.querySelector('#dN').textContent=it.i+1;bar.querySelector('#dTot').textContent='/ '+it.total;
+  bar.querySelector('#dDate').textContent=fmtDate(it.date,{weekday:'long',day:'numeric',month:'long'});
+  bar.querySelector('#dKm').textContent=(it.s?it.s.place||it.s.title:'')+' · '+nf(dist)+' km percorsi';
+  const r=bar.querySelector('#dRange');r.min=rg.start;r.max=rg.end;r.value=i;
+  document.querySelectorAll('.dcard').forEach(c=>{const k=+c.dataset.d;c.classList.toggle('cur',k===i);c.classList.toggle('next',k>i);});
+  S.dayStopIdx=it.idx;S.sel=it.s?it.s.id:null;
+  if(it.s){const to={lat:it.s.lat,lon:it.s.lon};if(!S.vanPos){S.vanPos=to;renderMap();}else if(first){renderMap();animVan(to);}}
+}
+function goDay(i,scroll,instant){
+  const A=S.all;if(!A)return;i=Math.max(0,Math.min(A.dayKs.length-1,i));updateDay(i);if(!scroll)return;S.lock=Date.now()+900;
+  const el=document.querySelector('[data-d="'+i+'"]');if(!el)return;
+  const bar=document.querySelector('.dbar');const y=el.getBoundingClientRect().top+window.scrollY-(bar?bar.offsetHeight:90)-24;
+  window.scrollTo({top:Math.max(0,y),behavior:instant?'auto':'smooth'});
+}
+function onScrollDays(){
+  if(S.tab!=='days'||!S.all||(S.lock&&Date.now()<S.lock))return;
+  const els=[...document.querySelectorAll('[data-d]')];if(!els.length)return;
+  const bar=document.querySelector('.dbar');const ref=(bar?bar.getBoundingClientRect().bottom:0)+30;
+  let k=+els[0].dataset.d;els.forEach(e=>{if(e.getBoundingClientRect().top<=ref)k=+e.dataset.d;});
+  if(window.innerHeight+window.scrollY>=document.documentElement.scrollHeight-4)k=S.all.dayKs.length-1;
+  if(k!==S.dayCur)updateDay(k);
+}
+window.addEventListener('scroll',()=>{if(S.tab==='days')requestAnimationFrame(onScrollDays);},{passive:true});
+function renderDays(c){
+  const A=buildAll();S.all=A;
+  if(S.enterDays||S.dayCur>=A.dayKs.length){
+    const j=S.sel?A.dayKs.findIndex(k=>A.items[k].s&&A.items[k].s.id===S.sel):-1;const r=A.ranges.find(r=>r.t.id===S.tripId);
+    S.dayCur=j>=0?j:(r?r.start:0);}
+  let h=`<div class="dbar"><div class="dtrip" id="dTrip"></div><div class="big"><i>giorno</i> <b id="dN">1</b><span id="dTot"></span></div><div class="dmeta"><b id="dDate"></b><span id="dKm"></span></div><div class="dctl"><button type="button" id="tPrev" aria-label="Viaggio precedente" title="Viaggio precedente">«</button><button type="button" id="dPrev" aria-label="Giorno precedente">‹</button><button type="button" class="play" id="dPlay" aria-label="Riproduci">▶</button><button type="button" id="dNext" aria-label="Giorno successivo">›</button><button type="button" id="tNext" aria-label="Viaggio successivo" title="Viaggio successivo">»</button></div><input id="dRange" type="range" min="0" max="1" step="1" value="0" aria-label="Scorri i giorni del viaggio"><div class="mapslot mini" id="slotMini"></div></div><div class="days">`;
+  A.items.forEach((it,k)=>{
+    if(it.type==='trip'){
+      const t=it.t;
+      h+=`<div class="tbanner" data-d="${it.d}" style="background:${gradFor(t.id)}"><div class="tb-k">Viaggio ${it.ti+1} di ${it.n}</div><h2>${esc(t.name)}</h2><div class="tb-d">${esc(fmtDate(it.first,{day:'numeric',month:'long'}))} → ${esc(fmtDate(it.last,{day:'numeric',month:'long',year:'numeric'}))} · ${it.days} ${it.days===1?'giorno':'giorni'} · ${nf(it.dist)} km</div>${t.story?`<p>${esc(t.story)}</p>`:''}${SCENE}</div>`;return;}
+    const di=A.dayKs.indexOf(k),s=it.s,st=it.st;let body='';const dl=esc(fmtDate(it.date,{weekday:'short',day:'numeric',month:'long'}));
+    if(it.kind==='start'){const ph=s.photos||[];const pk=it.idx?km(st[it.idx-1],s):0;
+      body=`<div class="dc"><div class="dd">${dl} · <span class="chip ${KCOL[s.kind]||''}">${kindIcon(s.kind)}${esc(s.kind||'')}</span></div><h3>${esc(s.title)}</h3><p class="place">${esc(s.place||'')}</p>${s.note?`<p class="note">${esc(s.note)}</p>`:''}<div class="facts">${it.idx?`<span>+${nf(pk)} km</span>`:'<span>partenza</span>'}${+s.nights?`<span>${s.nights} ${+s.nights===1?'notte':'notti'}</span>`:''}${+s.cost?`<span>${nf(s.cost)} €</span>`:''}</div>${ph.length?`<div class="strip">${ph.slice(0,4).map((p,j)=>`<img loading="lazy" data-ph="${j}" data-st="${esc(s.id)}" src="${esc(photoUrl(p))}" alt="">`).join('')}${ph.length>4?`<div class="more" data-ph="4" data-st="${esc(s.id)}">+${ph.length-4}</div>`:''}</div>`:''}${S.canWrite?`<div class="actions"><button class="btn sm" data-edit="${esc(s.id)}" type="button">Modifica</button></div>`:''}</div>`;}
+    else if(it.kind==='stay'){body=`<div class="dc"><div class="dd">${dl}</div><div class="stayline">Ancora a <b>${esc(s.place||s.title)}</b> · notte ${it.night} di ${Math.max(1,+s.nights)}</div></div>`;}
+    else{body=`<div class="dc"><div class="dd">${dl}</div><div class="stayline">Nessuna tappa registrata${s?' dopo '+esc(s.place||s.title):''}</div></div>`;}
+    h+=`<div class="dcard ${it.kind}" data-d="${di}"><div class="dn"><small>giorno</small><b>${it.i+1}</b></div>${body}</div>`;
+  });
+  h+='</div>';c.innerHTML=h;placeMap($('#slotMini'));if(!S.userView)S.view=null;
+  c.querySelectorAll('.dcard').forEach(el=>el.addEventListener('click',e=>{if(e.target.closest('[data-ph],[data-edit]'))return;goDay(+el.dataset.d,false);}));
+  c.querySelectorAll('[data-ph]').forEach(im=>im.onclick=()=>{const s=S.stops.find(x=>x.id===im.dataset.st);if(s)openLb((s.photos||[]).map(p=>({src:photoUrl(p),cap:s.title+' · '+fmtDate(s.date),sid:s.id,pid:p.id})),+im.dataset.ph);});
+  c.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>openStop(b.dataset.edit));
+  $('#dRange').oninput=e=>{stopPlay();goDay(+e.target.value,true);};
+  $('#dPrev').onclick=()=>{stopPlay();goDay(S.dayCur-1,true);};
+  $('#dNext').onclick=()=>{stopPlay();goDay(S.dayCur+1,true);};
+  const tripGo=d=>{stopPlay();const it=S.all.items[S.all.dayKs[S.dayCur]];const r=S.all.ranges[it.ti+d];if(r)goDay(r.start,true);};
+  $('#tPrev').onclick=()=>{const it=S.all.items[S.all.dayKs[S.dayCur]];const r=S.all.ranges[it.ti];if(S.dayCur>r.start){stopPlay();goDay(r.start,true);}else tripGo(-1);};
+  $('#tNext').onclick=()=>tripGo(1);
+  $('#dPlay').onclick=()=>{if(playT){stopPlay();return;}
+    if(S.dayCur>=A.dayKs.length-1)goDay(0,true);
+    $('#dPlay').textContent='❚❚';
+    playT=setInterval(()=>{if(S.dayCur>=S.all.dayKs.length-1){stopPlay();return;}goDay(S.dayCur+1,true);},2200);};
+  S.dayStopIdx=null;updateDay(S.dayCur);
+  if(S.enterDays){S.enterDays=false;goDay(S.dayCur,true,true);}
+}
+function renderStory(c){
+  const chaps=[];let h='<div class="book">';
+  const ts=tripsByDate().filter(t=>stopsOf(t.id).length);
+  ts.forEach((t,ti)=>{
+    const st=stopsOf(t.id);let dist=0;for(let i=1;i<st.length;i++)dist+=km(st[i-1],st[i]);
+    const nights=st.reduce((a,s)=>a+(+s.nights||0),0);
+    const range=fmtDate(st[0].date,{day:'numeric',month:'long'})+(st[st.length-1].date!==st[0].date?' – '+fmtLong(st[st.length-1].date):' '+new Date(st[0].date+'T12:00:00').getFullYear());
+    h+='<section class="cover" data-trip="'+esc(t.id)+'" style="background:'+gradFor(t.id)+'"><div class="kicker">Il racconto di Wanda · Boxlife 540 · viaggio '+(ti+1)+' di '+ts.length+'</div><h2>'+esc(t.name)+'</h2><div class="when">'+esc(range)+'</div>'+(t.story?'<p class="intro">'+esc(t.story)+'</p>':(S.canWrite?'<p class="intro">Scrivi qui come è iniziato il viaggio: apri “Modifica viaggio” e racconta la partenza.</p>':''))+SCENE+'</section>';
+    st.forEach((s,i)=>{
+      const ph=s.photos||[];chaps.push(s);
+      if(i)h+='<div class="leg">'+nf(km(st[i-1],s))+' km</div>';
+      h+='<article class="chap" data-c="'+(chaps.length-1)+'"><div class="no">Capitolo '+(i+1)+' · '+esc(fmtDate(s.date,{weekday:'long',day:'numeric',month:'long'}))+'</div><h3>'+esc(s.title)+'</h3><div class="where">'+esc([s.place,s.kind].filter(Boolean).join(' · '))+(+s.nights?' · '+s.nights+(+s.nights===1?' notte':' notti'):'')+'</div>'
+        +(ph.length?'<figure class="polaroid"><img loading="lazy" data-ph="0" src="'+esc(photoUrl(ph[0]))+'" alt="'+esc(s.title)+'"><figcaption>'+esc(s.title)+'</figcaption></figure>':'')
+        +(s.note?'<div class="text">'+esc(s.note)+'</div>':'<div class="text none">Qui manca ancora il ricordo di questa tappa.</div>')
+        +(ph.length>1?'<div class="more">'+ph.slice(1).map((p,k)=>'<img loading="lazy" data-ph="'+(k+1)+'" src="'+esc(photoUrl(p))+'" alt="">').join('')+'</div>':'')
+        +'<div><a class="btn sm" href="#" data-map="'+esc(s.id)+'">Vedi sulla mappa</a>'+(S.canWrite?' <button class="btn sm" data-edit="'+esc(s.id)+'" type="button">Scrivi il ricordo</button>':'')+'</div></article>';
+    });
+    h+='<section class="endcard"><h3>Il viaggio in breve</h3><p>'+st.length+(st.length===1?' tappa':' tappe')+', '+nights+(nights===1?' notte':' notti')+' e circa '+nf(dist)+' km in linea d\'aria. Tutto con Wanda.</p>'+(t.best?'<p class="best"><b>Il ricordo più bello:</b> '+esc(t.best)+'</p>':'')+'</section>';
+  });
+  c.innerHTML=h+'</div>';
+  c.querySelectorAll('[data-ph]').forEach(im=>{const s=chaps[+im.closest('.chap').dataset.c];im.onclick=()=>openLb((s.photos||[]).map(p=>({src:photoUrl(p),cap:s.title+' · '+fmtDate(s.date),sid:s.id,pid:p.id})),+im.dataset.ph);});
+  c.querySelectorAll('[data-map]').forEach(a=>a.onclick=e=>{e.preventDefault();const s=S.stops.find(x=>x.id===a.dataset.map);if(!s)return;S.tripId=s.tripId;S.tab='map';S.sel=s.id;S.view=null;S.userView=false;renderAll();focusStop(s);window.scrollTo({top:document.querySelector('.tabs').getBoundingClientRect().top+window.scrollY-20,behavior:'smooth'});});
+  c.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>openStop(b.dataset.edit));
+}
+
+/* ---------- finestra viaggio ---------- */
+function openTrip(t){
+  const f=$('#fTrip');
+  f.innerHTML=`<h2>${t?'Modifica viaggio':'Nuovo viaggio'}</h2>
+  <div class="fld"><label for="tName">Nome</label><input id="tName" required maxlength="80" placeholder="Es. Toscana e Maremma, ottobre" value="${esc(t?t.name:'')}"></div>
+  <div class="fld"><label for="tStory">Come è iniziato (apre il racconto)</label><textarea id="tStory" maxlength="1500" placeholder="Il giorno della partenza, l'idea, che tempo faceva, chi c'era">${esc(t?t.story||'':'')}</textarea></div>
+  <div class="fld"><label for="tBest">Il ricordo più bello</label><input id="tBest" maxlength="300" placeholder="Una scena, un posto, una frase" value="${esc(t?t.best||'':'')}"></div>
+  <div class="fld"><label for="tNotes">Descrizione breve</label><textarea id="tNotes" maxlength="500" placeholder="Con chi, quale van, tema del viaggio">${esc(t?t.notes||'':'')}</textarea></div>
+  <p class="err" id="tErr"></p>
+  <div class="foot"><div class="grp">${t?'<button class="btn danger" type="button" id="tDel">Elimina viaggio</button>':''}</div><div class="grp"><button class="btn ghost" type="button" id="tCancel">Annulla</button><button class="btn primary" type="submit">Salva</button></div></div>`;
+  $('#ovTrip').classList.remove('hide');setTimeout(()=>$('#tName').focus(),30);
+  $('#tCancel').onclick=()=>$('#ovTrip').classList.add('hide');
+  const del=$('#tDel');
+  if(del){let armed=false;del.onclick=async()=>{if(!armed){armed=true;del.textContent='Conferma: elimina anche le tappe';return;}
+    const ids=S.stops.filter(s=>s.tripId===t.id);try{for(const s of ids)await store.del('stops',s.id);await store.del('trips',t.id);}catch(e){$('#tErr').textContent='Non sono riuscito a eliminare: '+(e.message||e.code);return;}
+    $('#ovTrip').classList.add('hide');S.tripId=null;S.sel=null;renderAll();};}
+  f.onsubmit=async e=>{e.preventDefault();const name=$('#tName').value.trim();if(!name)return;
+    const id=t?t.id:uid();try{await store.put('trips',id,{name,notes:$('#tNotes').value.trim(),story:$('#tStory').value.trim(),best:$('#tBest').value.trim(),createdAt:t?t.createdAt:Date.now()});}catch(x){$('#tErr').textContent='Salvataggio non riuscito: '+(x.message||x.code);return;}
+    S.tripId=id;try{localStorage.setItem('van.trip',id)}catch(x){}S.view=null;S.userView=false;$('#ovTrip').classList.add('hide');renderAll();};
+}
+
+/* ---------- finestra tappa ---------- */
+let draft=null;
+function parseCoords(s){
+  s=(s||'').trim();if(!s)return null;
+  let m=s.match(/^(-?\d+(?:\.\d+)?)\s*[,;\s]\s*(-?\d+(?:\.\d+)?)$/);
+  if(!m){const s2=s.replace(/(\d),(\d)/g,'$1.$2');m=s2.match(/^(-?\d+(?:\.\d+)?)\s*[;\s]\s*(-?\d+(?:\.\d+)?)$/);}
+  if(!m)return null;const lat=+m[1],lon=+m[2];if(Math.abs(lat)>90||Math.abs(lon)>180)return null;return{lat,lon};
+}
+function thumbsHtml(){return draft.photos.map((p,i)=>`<div class="thumb"><img src="${esc(photoUrl(p))}" alt=""><button type="button" data-rm="${i}" aria-label="Rimuovi foto">×</button></div>`).join('');}
+function openStop(id){
+  const s=id?S.stops.find(x=>x.id===id):null;
+  const lastDate=tripStops().slice(-1)[0];
+  draft={id:s?s.id:null,photos:s?[...(s.photos||[])]:[],added:[],lat:s?s.lat:null,lon:s?s.lon:null};
+  const f=$('#fStop');
+  f.innerHTML=`<h2>${s?'Modifica tappa':'Nuova tappa'}</h2>
+  <div class="fld"><label for="sTitle">Titolo</label><input id="sTitle" required maxlength="100" placeholder="Es. Tramonto sul lago" value="${esc(s?s.title:'')}"></div>
+  <div class="two"><div class="fld"><label for="sDate">Data</label><input id="sDate" type="date" required value="${esc(s?s.date:(lastDate?lastDate.date:new Date().toISOString().slice(0,10)))}"></div>
+  <div class="fld"><label for="sKind">Tipo di sosta</label><select id="sKind">${KINDS.map(k=>`<option${s&&s.kind===k?' selected':''}>${k}</option>`).join('')}</select></div></div>
+  <div class="fld"><label for="sPlace">Luogo</label><div class="coordrow"><input id="sPlace" list="gaz" maxlength="120" placeholder="Es. Lago di Braies, Cala Gonone…" value="${esc(s?s.place||'':'')}"><button class="btn" type="button" id="sFind">Cerca</button></div><div id="sRes" class="georesults"></div></div>
+  <div class="fld"><label for="sCoords">Coordinate</label><div class="coordrow"><input id="sCoords" inputmode="decimal" placeholder="43.0770, 11.6790" value="${s?s.lat.toFixed(5)+', '+s.lon.toFixed(5):''}"><button class="btn" type="button" id="sPick">Scegli sulla mappa</button></div>
+  <small>Si compilano da sole con “Cerca” o toccando la mappa. Puoi anche incollare “latitudine, longitudine” da Google Maps.</small></div>
+  <div class="two"><div class="fld"><label for="sNights">Notti</label><input id="sNights" type="number" min="0" max="60" value="${s?(+s.nights||0):1}"></div>
+  <div class="fld"><label for="sCost">Costo totale (€)</label><input id="sCost" type="number" min="0" step="0.5" value="${s&&+s.cost?s.cost:''}" placeholder="0"></div></div>
+  <div class="fld"><label for="sNote">Note</label><textarea id="sNote" maxlength="2000" placeholder="Cosa vi è piaciuto, servizi, consigli, cose da non rifare">${esc(s?s.note||'':'')}</textarea></div>
+  <div class="fld"><label>Foto</label><div class="thumbs" id="sThumbs">${thumbsHtml()}</div>
+  ${S.assets?'<div><input id="sFiles" type="file" accept="image/*" multiple hidden><button class="btn sm" type="button" id="sAdd">Aggiungi foto</button> <span id="sUp" class="mapnote"></span></div>':'<small>Il caricamento delle foto richiede un accesso con permessi di modifica.</small>'}</div>
+  <p class="err" id="sErr"></p>
+  <div class="foot"><div class="grp">${s?'<button class="btn danger" type="button" id="sDel">Elimina tappa</button>':''}</div><div class="grp"><button class="btn ghost" type="button" id="sCancel">Annulla</button><button class="btn primary" type="submit">Salva tappa</button></div></div>`;
+  $('#ovStop').classList.remove('hide');setTimeout(()=>$('#sTitle').focus(),30);
+  const place=$('#sPlace'),co=$('#sCoords');
+  place.addEventListener('input',()=>{const g=GAZ.find(x=>x[0]===place.value);if(g){co.value=g[1].toFixed(5)+', '+g[2].toFixed(5);}});
+  const find=async()=>{const q=place.value.trim();const box=$('#sRes');if(!q){place.focus();return;}box.innerHTML='<small>Cerco…</small>';
+    try{const r=await fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&limit=6&accept-language=it&q='+encodeURIComponent(q));const js=await r.json();
+      if(!js.length){box.innerHTML='<small>Nessun risultato: prova con un nome diverso o tocca la mappa.</small>';return;}
+      box.innerHTML=js.map((x,i)=>'<button type="button" class="geo" data-g="'+i+'"><b>'+esc(x.name||x.display_name.split(',')[0])+'</b><small>'+esc(x.display_name)+'</small></button>').join('');
+      box.querySelectorAll('[data-g]').forEach(b=>b.onclick=()=>{const x=js[+b.dataset.g];place.value=x.name||x.display_name.split(',')[0];co.value=(+x.lat).toFixed(5)+', '+(+x.lon).toFixed(5);box.innerHTML='';});
+    }catch(e){box.innerHTML='<small>Ricerca non disponibile ora. Tocca la mappa o incolla le coordinate.</small>';}};
+  $('#sFind').onclick=find;place.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();find();}});
+  $('#sPick').onclick=()=>{S.pick=true;S.pickPrev=$('#mapbox').parentNode;$('#ovStop').classList.add('hide');$('#ovPick').classList.remove('hide');placeMap($('#slotPick'));$('#mapbox').classList.add('picking');$('#pickbar').hidden=false;const pc=parseCoords(co.value);setTimeout(()=>{if(!LM)return;LM.invalidateSize();if(pc){S.userView=true;LM.setView([pc.lat,pc.lon],13);}},60);};
+  $('#sThumbs').onclick=e=>{const b=e.target.closest('[data-rm]');if(!b)return;draft.photos.splice(+b.dataset.rm,1);$('#sThumbs').innerHTML=thumbsHtml();};
+  if(S.assets){
+    $('#sAdd').onclick=()=>$('#sFiles').click();
+    $('#sFiles').onchange=async e=>{const files=[...e.target.files];const up=$('#sUp');let n=0;
+      for(const file of files){n++;up.textContent=`Carico ${n} di ${files.length}…`;
+        try{const blob=await shrink(file);const r=await S.assets.upload(blob);draft.photos.push({id:r.id});draft.added.push(r.id);$('#sThumbs').innerHTML=thumbsHtml();}
+        catch(x){$('#sErr').textContent='Foto non caricata: '+(x&&(x.message||x.code)||'errore');}}
+      up.textContent='';e.target.value='';};
+  }
+  $('#sCancel').onclick=async()=>{closeStop(true);};
+  const del=$('#sDel');
+  if(del){let armed=false;del.onclick=async()=>{if(!armed){armed=true;del.textContent='Conferma eliminazione';return;}
+    try{await store.del('stops',s.id);}catch(x){$('#sErr').textContent='Eliminazione non riuscita: '+(x.message||x.code);return;}
+    if(S.assets)for(const p of s.photos||[]){try{await S.assets.delete(p.id)}catch(x){}}
+    S.sel=null;closeStop(false);renderAll();};}
+  f.onsubmit=async e=>{e.preventDefault();const err=$('#sErr');err.textContent='';
+    const c=parseCoords(co.value);if(!c){err.textContent='Coordinate non valide. Usa il formato 43.0770, 11.6790 oppure scegli il punto sulla mappa.';co.focus();return;}
+    const sid=draft.id||uid();const row={tripId:s?s.tripId:S.tripId,title:$('#sTitle').value.trim(),date:$('#sDate').value,kind:$('#sKind').value,place:place.value.trim(),lat:c.lat,lon:c.lon,nights:Math.max(0,+$('#sNights').value||0),cost:Math.max(0,+$('#sCost').value||0),note:$('#sNote').value.trim(),photos:draft.photos,createdAt:s?s.createdAt:Date.now()};
+    try{await store.put('stops',sid,row);}catch(x){err.textContent='Salvataggio non riuscito: '+(x.message||x.code);return;}
+    // foto tolte dalla tappa: le elimino dall'archivio
+    if(s&&S.assets){const keep=new Set(draft.photos.map(p=>p.id));for(const p of s.photos||[])if(!keep.has(p.id)){try{await S.assets.delete(p.id)}catch(x){}}}
+    S.sel=sid;draft.added=[];closeStop(false);renderAll();const ns=S.stops.find(x=>x.id===sid);if(ns)focusStop(ns);};
+}
+async function closeStop(cancel){
+  if(cancel&&draft&&S.assets){for(const id of draft.added){try{await S.assets.delete(id)}catch(x){}}}
+  $('#ovStop').classList.add('hide');draft=null;
+}
+function finishPick(pt){
+  S.pick=false;$('#mapbox').classList.remove('picking');$('#pickbar').hidden=true;$('#ovPick').classList.add('hide');placeMap(S.pickPrev&&S.pickPrev.id!=='mapPark'?S.pickPrev:null);S.view=null;S.userView=false;reMap();$('#ovStop').classList.remove('hide');
+  if(pt){$('#sCoords').value=pt.lat.toFixed(5)+', '+pt.lon.toFixed(5);if(!$('#sPlace').value.trim())reverseGeo(pt);}
+}
+// ridimensiona la foto (max 1600 px) prima del caricamento
+function shrink(file){return new Promise((res,rej)=>{
+  const url=URL.createObjectURL(file);const im=new Image();
+  im.onload=()=>{const m=1600,k=Math.min(1,m/Math.max(im.width,im.height));const c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);
+    c.getContext('2d').drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(url);c.toBlob(b=>b?res(b):rej(new Error('Immagine non leggibile')),'image/jpeg',0.82);};
+  im.onerror=()=>{URL.revokeObjectURL(url);rej(new Error('Formato immagine non supportato'));};im.src=url;});}
+
+async function reverseGeo(pt){
+  try{const r=await fetch('https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=14&accept-language=it&lat='+pt.lat+'&lon='+pt.lon);const x=await r.json();
+    const a=x.address||{};const n=a.village||a.town||a.city||a.hamlet||a.suburb||x.name||'';const pl=$('#sPlace');if(pl&&!pl.value.trim()&&n)pl.value=n;}catch(e){}
+}
+/* ---------- foto a schermo intero ---------- */
+let lb=null;
+function openLb(list,i){lb={list,i};drawLb();$('#ovLb').classList.remove('hide');}
+function drawLb(){const x=lb.list[lb.i];const el=$('#ovLb');
+  el.innerHTML=`<img src="${esc(x.src)}" alt="${esc(x.cap)}"><div class="cap">${esc(x.cap)} · ${lb.i+1}/${lb.list.length}</div><div class="bar"><button class="btn" id="lbP" type="button">‹ Prec.</button><button class="btn" id="lbN" type="button">Succ. ›</button><button class="btn" id="lbX" type="button">Chiudi</button></div>`;
+  $('#lbP').onclick=e=>{e.stopPropagation();lb.i=(lb.i+lb.list.length-1)%lb.list.length;drawLb();};
+  $('#lbN').onclick=e=>{e.stopPropagation();lb.i=(lb.i+1)%lb.list.length;drawLb();};
+  $('#lbX').onclick=closeLb;}
+function closeLb(){$('#ovLb').classList.add('hide');lb=null;}
+$('#ovLb').addEventListener('click',e=>{if(e.target.id==='ovLb')closeLb();});
+$('#allClose').onclick=()=>$('#ovAll').classList.add('hide');
+$('#ovAll').addEventListener('click',e=>{if(e.target.id==='ovAll')$('#ovAll').classList.add('hide');});
+document.addEventListener('keydown',e=>{
+  if(lb){if(e.key==='Escape')closeLb();else if(e.key==='ArrowRight'){lb.i=(lb.i+1)%lb.list.length;drawLb();}else if(e.key==='ArrowLeft'){lb.i=(lb.i+lb.list.length-1)%lb.list.length;drawLb();}return;}
+  if(e.key==='Escape'&&!$('#ovAll').classList.contains('hide')){$('#ovAll').classList.add('hide');return;}
+  if(e.key==='Escape'){if(S.pick)finishPick(null);else if(!$('#ovStop').classList.contains('hide'))closeStop(true);else $('#ovTrip').classList.add('hide');}});
+
+/* ---------- esempio ---------- */
+async function loadDemo(){
+  const y=new Date().getFullYear();
+  const mk=async(name,notes,story,best,start,rows,created)=>{
+    const tid=uid();await store.put('trips',tid,{name,notes,story,best,createdAt:created});
+    let d=new Date(start+'T12:00:00');
+    for(const r of rows){await store.put('stops',uid(),{tripId:tid,title:r[0],date:d.toISOString().slice(0,10),kind:r[1],place:r[2],lat:r[3],lon:r[4],nights:r[5],cost:r[6],note:r[7],photos:[],createdAt:Date.now()});d=new Date(d.getTime()+86400000*(r[5]||1));}
+    return tid;};
+  await mk('Esempio · Dolomiti d\'agosto','Viaggio di prova: puoi modificarlo o eliminarlo.','Prime vere ferie con Wanda: due settimane promesse, in realtà tre giorni di passi, malghe e temporali pomeridiani.\n(Testo di esempio: sostituiscilo con il vostro.)','La colazione davanti alle Odle con la nebbia che saliva.',y+'-08-04',[
+    ['Alpe di Siusi all\'alba','Area sosta','Ortisei',46.57,11.67,2,22,'Salita con il van fino al parcheggio alto. Sveglia alle 5 per vedere il sole sulle cime.'],
+    ['Cortina e il lago','Campeggio','Cortina d\'Ampezzo',46.54,12.14,2,38,'Giro in bici intorno al lago e pizza al tramonto. Doccia calda, finalmente.'],
+    ['Discesa verso casa','Solo passaggio','Trento',46.07,11.12,0,0,'Sosta pranzo e gelato in centro.']],Date.now()-1000);
+  const tid=await mk('Esempio · Weekend in Maremma','Viaggio di prova: puoi modificarlo o eliminarlo.','Un weekend lungo di metà settembre, con Wanda piena di casse di vino e zero programmi rigidi. Siamo partiti dopo pranzo con la voglia di strade basse e colline.\n(Testo di esempio: sostituiscilo con il vostro.)','Il bagno a Talamone con l\'acqua ferma e nessuno intorno.',y+'-09-12',[
+    ['Partenza e cena a Siena','Area sosta','Siena',43.318,11.331,1,18,'Sosta comoda a piedi dal centro. Carico e scarico acque disponibile.'],
+    ['Pienza e il pecorino','Agriturismo','Pienza (Val d\'Orcia)',43.077,11.679,1,25,'Colazione con vista sulla valle. Pecorino stagionato da portare a casa.'],
+    ['Mare a Talamone','Sosta libera','Talamone',42.551,11.128,2,0,'Parcheggio sotto la rocca. Acqua limpida e quasi nessuno a settembre.'],
+    ['Rientro da Orvieto','Solo passaggio','Orvieto',42.718,12.111,0,0,'Pranzo e giro in funicolare.']],Date.now());
+  S.tripId=tid;S.view=null;S.userView=false;renderAll();
+}
+
+/* ---------- avvio ---------- */
+function lockUI(on){document.body.classList.toggle('locked',on);}
+function showLogin(msg){
+  lockUI(true);S.loading=false;
+  $('#content').innerHTML=`<div class="empty login"><h2>Entra nel diario</h2><p>Scrivi la tua email: ti mandiamo un link per entrare, senza password.</p>
+  <form id="fLogin" class="loginrow"><input id="lEmail" type="email" required autocomplete="email" placeholder="nome@esempio.it" aria-label="Email"><button class="btn primary" type="submit">Mandami il link</button></form>
+  <p class="err" id="lMsg">${esc(msg||'')}</p></div>`;
+  $('#fLogin').onsubmit=async e=>{e.preventDefault();const email=$('#lEmail').value.trim().toLowerCase();const m=$('#lMsg');m.textContent='Invio in corso…';
+    const{error}=await sb.auth.signInWithOtp({email,options:{emailRedirectTo:location.origin+location.pathname}});
+    m.textContent=error?'Invio non riuscito: '+error.message:'Fatto! Apri la mail e tocca il link. Puoi chiudere questa pagina.';};
+}
+let started=false;
+async function startApp(session){
+  if(started)return;started=true;lockUI(false);
+  const email=(session.user.email||'').toLowerCase();
+  const mem=await sb.from('members').select('email').eq('email',email).maybeSingle();
+  if(!mem.data){started=false;await sb.auth.signOut();showLogin('L’email '+email+' non è tra quelle autorizzate a entrare nel diario.');return;}
+  S.loading=true;renderAll();
+  const [t,s]=await Promise.all([sb.from('trips').select('id,data'),sb.from('stops').select('id,data')]);
+  if(t.error||s.error){$('#notice').innerHTML='<p class="notice">Non riesco a leggere i dati: '+esc((t.error||s.error).message)+'</p>';}
+  S.trips=(t.data||[]).map(r=>Object.assign({id:r.id},r.data));S.stops=(s.data||[]).map(r=>Object.assign({id:r.id},r.data));
+  S.loading=false;renderAll();signPhotos();
+  let tmo=null;const later=()=>{clearTimeout(tmo);tmo=setTimeout(()=>{renderAll();signPhotos();},120);};
+  sb.channel('wanda').on('postgres_changes',{event:'*',schema:'public',table:'trips'},p=>{if(p.eventType==='DELETE')removeLocal('trips',p.old.id);else upsertLocal('trips',p.new.id,p.new.data);later();})
+    .on('postgres_changes',{event:'*',schema:'public',table:'stops'},p=>{if(p.eventType==='DELETE')removeLocal('stops',p.old.id);else upsertLocal('stops',p.new.id,p.new.data);later();}).subscribe();
+}
+function backup(){
+  const data={app:'Wanda in viaggio',esportato:new Date().toISOString(),viaggi:S.trips,tappe:S.stops,nota:'Le foto restano nello spazio "foto" di Supabase: qui ci sono solo i loro nomi.'};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);a.download='wanda-backup-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500);
+}
+mapEvents();initMap();
+(async function boot(){
+  const cfg=window.WANDA_CONFIG||{};
+  if(!window.supabase||!cfg.supabaseUrl||!cfg.supabaseAnonKey||cfg.supabaseUrl.includes('INSERISCI')){
+    lockUI(true);S.loading=false;$('#content').innerHTML='<div class="empty"><h2>Manca la configurazione</h2><p>Apri il file <b>config.js</b> e inserisci l’indirizzo del progetto Supabase e la chiave pubblica (anon). Le istruzioni sono nel file README.</p></div>';return;}
+  sb=window.supabase.createClient(cfg.supabaseUrl,cfg.supabaseAnonKey);
+  $('#btnOut').onclick=async()=>{await sb.auth.signOut();location.reload();};
+  $('#btnBackup').onclick=backup;
+  sb.auth.onAuthStateChange((ev,session)=>{if(session)startApp(session);});
+  const{data:{session}}=await sb.auth.getSession();
+  if(session)startApp(session);else showLogin('');
+})();
+})();
+</script>
+</body>
+</html>
