@@ -47,8 +47,14 @@ Dopo un paio di minuti il diario è su `https://marthack-88.github.io/wanda-in-v
   `insert into public.members (email) values (lower('nuova@email.it'));`
   e crea il suo utente con password (vedi sopra).
 
+## Km e percorsi
+I km sono calcolati **su strada** tra una tappa e l'altra, con **andata e ritorno da casa** (Milano,
+modificabile per ogni viaggio in ⋯ → Modifica viaggio). I percorsi si calcolano con OSRM la prima volta
+che si apre un viaggio e restano salvati nel viaggio; finché non sono pronti i km hanno il simbolo ≈.
+
 ## Servizi usati
-Mappa e satellite © Esri (con dati OpenStreetMap), ricerca luoghi Nominatim (OpenStreetMap).
+Mappa e satellite © Esri (con dati OpenStreetMap), ricerca luoghi Nominatim (OpenStreetMap),
+percorsi stradali OSRM (project-osrm.org).
 
 ## Aggiornare il sito
 Se modifichi `index.html`, cambia anche il numero in `sw.js` (`const V = 'wanda-v1'` → `wanda-v2`…)

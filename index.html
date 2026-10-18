@@ -502,6 +502,15 @@ body{min-height:100vh;background:transparent}
 .hero.photo .sub,.hero.photo .hnote,.hero.photo .kicker,.tbanner.photo p,.cover.photo p.intro{text-shadow:0 1px 8px rgba(0,0,0,.5)}
 @media (max-width:760px){.hero.photo{padding-bottom:96px}}
 
+.dcard.end .dc{padding:11px 16px;background:rgba(255,255,255,.45);border-color:rgba(108,74,182,.25);border-style:dashed;box-shadow:none}
+.dstop{position:relative}
+.dstop+.dstop{margin-top:14px;padding-top:14px;border-top:1px dashed var(--line)}
+.dc .dstop .editpen{top:-4px;right:-8px}
+.dc .dstop+.dstop .editpen{top:10px}
+.lhome{position:absolute;left:-15px;top:-15px;width:30px;height:30px;border-radius:50%;background:#0F3550;border:3px solid #fff;display:grid;place-items:center;box-shadow:0 3px 8px rgba(0,0,0,.35)}
+.lhome svg{width:15px;height:15px}
+.chk{display:flex!important;align-items:center;gap:8px;font-size:14px!important;color:var(--ink)!important;cursor:pointer}
+.fld .chk input{width:auto;accent-color:var(--accent)}
 /* ===== numeri complessivi in homepage ===== */
 .totals{margin:6px 6% 18px}
 .tothead{font:600 11.5px var(--font-mono);letter-spacing:.16em;text-transform:uppercase;color:#1E4B66;margin:0 0 8px 2px}
@@ -741,6 +750,7 @@ function ensureTrip(){
 
 /* ---------- mappa (Leaflet) ---------- */
 let LM=null,layer=null,vanMk=null;const base={};
+const HOME_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-7 8 7v9H4z"/><path d="M10 20v-5h4v5"/></svg>';
 const VAN_SVG='<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15V8a2 2 0 0 1 2-2h9a4 4 0 0 1 4 4v5"/><path d="M3 15h18v2H3z"/><circle cx="7.5" cy="18.5" r="1.5" fill="#fff"/><circle cx="16.5" cy="18.5" r="1.5" fill="#fff"/></svg>';
 function initMap(){
   if(LM||!window.L)return;
@@ -754,7 +764,7 @@ function initMap(){
   LM.on('dragstart',()=>{S.userView=true;});
 }
 function fitTrip(){
-  if(!LM)return;const ll=tripStops().map(s=>[s.lat,s.lon]);
+  if(!LM)return;const ll=tripStops().map(s=>[s.lat,s.lon]);const h=tripHome(curTrip());if(h&&ll.length)ll.push([h.lat,h.lon]);
   if(ll.length>1)LM.fitBounds(ll,{padding:[48,48],maxZoom:12,animate:false});
   else if(ll.length===1)LM.setView(ll[0],11,{animate:false});
   else LM.setView([42.3,12.5],6,{animate:false});
@@ -762,11 +772,13 @@ function fitTrip(){
 function renderMap(){
   if(!LM)return;layer.clearLayers();
   const st=tripStops();const dm=S.tab==='days'&&S.dayStopIdx!=null&&st.length;
-  const k=dm?Math.min(S.dayStopIdx,st.length-1):st.length-1;const ll=st.map(s=>[s.lat,s.lon]);
-  if(ll.length>1){
-    if(dm&&k<ll.length-1)L.polyline(ll.slice(k),{color:'#FF5E5B',weight:3,opacity:.7,dashArray:'2 9',lineCap:'round',interactive:false}).addTo(layer);
-    if(k>0){const d=ll.slice(0,k+1);L.polyline(d,{color:'#fff',weight:9,opacity:.95,interactive:false}).addTo(layer);L.polyline(d,{color:'#FF5E5B',weight:4.5,interactive:false}).addTo(layer);}
-  }
+  const k=dm?Math.min(S.dayStopIdx,st.length-1):st.length-1;const t=curTrip(),h=tripHome(t);
+  // percorso su strada (o linea dritta finché il tratto non è calcolato); casa → tappe → casa
+  legPairs(t,st).forEach(p=>{const g=getLeg(t,p);const pts=g&&g.p?decodePoly(g.p):[[p.a.lat,p.a.lon],[p.b.lat,p.b.lon]];
+    const done=!dm||(p.ret?S.dayEnd:p.i<=k);const op=p.home?.6:1;
+    if(done){L.polyline(pts,{color:'#fff',weight:8,opacity:.9*op,interactive:false}).addTo(layer);L.polyline(pts,{color:'#FF5E5B',weight:4,opacity:op,dashArray:g?null:'6 8',interactive:false}).addTo(layer);}
+    else L.polyline(pts,{color:'#FF5E5B',weight:3,opacity:.6,dashArray:'2 9',lineCap:'round',interactive:false}).addTo(layer);});
+  if(h&&st.length)L.marker([h.lat,h.lon],{icon:L.divIcon({className:'lwrap',html:'<div class="lhome" title="'+esc(h.name)+'">'+HOME_SVG+'</div>',iconSize:[0,0]}),title:'Casa · '+h.name,zIndexOffset:-100}).addTo(layer);
   st.forEach((s,i)=>{const fut=dm&&i>k,sel=s.id===S.sel&&!dm;
     const ic=L.divIcon({className:'lwrap',html:'<div class="lpin'+(fut?' f':'')+(sel?' sel':'')+'"><b>'+(i+1)+'</b><span>'+esc((s.place||s.title).split(' (')[0])+'</span></div>',iconSize:[0,0]});
     L.marker([s.lat,s.lon],{icon:ic,zIndexOffset:sel?1000:0,title:s.title}).on('click',()=>{if(!S.pick)selectStop(s.id,true);}).addTo(layer);});
@@ -807,10 +819,10 @@ function renderTop(){
   let o=totalsHtml(ts)+(ts.length>1?'<div class="carhead"><span>I vostri viaggi</span><button type="button" class="btn sm allbtn" id="btnAll"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Tutti i viaggi · '+ts.length+'</button></div>':'');
   o+='<div class="tripcar'+(ts.length===1?' single':'')+'" id="tripcar">';
   ts.forEach((t,i)=>{
-    const st=stopsOf(t.id);let dist=0;for(let k=1;k<st.length;k++)dist+=km(st[k-1],st[k]);
+    const st=stopsOf(t.id);const dist=tripKm(t,st,null,true);
     const nights=st.reduce((a,s)=>a+(+s.nights||0),0),cost=st.reduce((a,s)=>a+(+s.cost||0),0),ph=st.reduce((a,s)=>a+((s.photos||[]).length),0);
     const range=st.length?(st[0].date===st[st.length-1].date?fmtLong(st[0].date):fmtDate(st[0].date,{day:'numeric',month:'short'})+' – '+fmtLong(st[st.length-1].date)):'Ancora nessuna tappa';
-    o+=`<article class="hero${t.id===S.tripId?' on':''}${coverUrl(t.id)?' photo':''}" data-trip="${esc(t.id)}" style="background:${esc(tripBg(t.id))}"><div class="kicker">Viaggio ${i+1} di ${ts.length} · Wanda</div><h2>${esc(t.name)}</h2><div class="sub">${esc(range)}</div>${t.notes?`<p class="hnote">${esc(t.notes)}</p>`:''}<div class="stats"><div class="stat"><b>${st.length}</b><span>tappe</span></div><div class="stat"><b>${nights}</b><span>notti</span></div><div class="stat" title="Somma delle distanze in linea d'aria tra tappe consecutive"><b>${nf(dist)}</b><span>km</span></div><div class="stat"><b>${nf(cost)}€</b><span>spesa</span></div><div class="stat"><b>${ph}</b><span>foto</span></div></div>${tripScene(t.id)}</article>`;
+    o+=`<article class="hero${t.id===S.tripId?' on':''}${coverUrl(t.id)?' photo':''}" data-trip="${esc(t.id)}" style="background:${esc(tripBg(t.id))}"><div class="kicker">Viaggio ${i+1} di ${ts.length} · Wanda</div><h2>${esc(t.name)}</h2><div class="sub">${esc(range)}</div>${t.notes?`<p class="hnote">${esc(t.notes)}</p>`:''}<div class="stats"><div class="stat"><b>${st.length}</b><span>tappe</span></div><div class="stat"><b>${nights}</b><span>notti</span></div><div class="stat" title="${esc(kmTip(t))}"><b>${kmTxt(dist)}</b><span>km</span></div><div class="stat"><b>${nf(cost)}€</b><span>spesa</span></div><div class="stat"><b>${ph}</b><span>foto</span></div></div>${tripScene(t.id)}</article>`;
   });
   o+='</div>';
   if(ts.length>1)o+='<button type="button" class="carbtn prev" id="carPrev" aria-label="Viaggio precedente">‹</button><button type="button" class="carbtn next" id="carNext" aria-label="Viaggio successivo">›</button><div class="cardots">'+ts.map(t=>`<button type="button" class="cdot${t.id===S.tripId?' on':''}" data-dot="${esc(t.id)}" aria-label="${esc(t.name)}"></button>`).join('')+'</div>';
@@ -825,17 +837,16 @@ function renderTop(){
   cards.forEach(c=>c.addEventListener('click',()=>{if(c.dataset.trip!==S.tripId)center(c,true);}));
 }
 // numeri complessivi di tutti i viaggi, per la homepage
-const ROAD=1.25; // le strade sono più lunghe della linea d'aria: stima prudente
+function kmTip(t){const h=tripHome(t);return 'Km su strada tra le tappe'+(h?', con andata e ritorno da '+h.name:'')+'. Con ≈ sono stime, in attesa del calcolo del percorso.';}
 function totalsHtml(ts){
-  let n=0,days=0,nights=0,air=0,stops=0;
+  let n=0,days=0,nights=0,road=0,approx=0,stops=0;
   ts.forEach(t=>{const st=stopsOf(t.id);if(!st.length)return;n++;days+=daysOf(st).length;stops+=st.length;
-    st.forEach((s,k)=>{nights+=+s.nights||0;if(k)air+=km(st[k-1],s);});});
+    st.forEach(s=>{nights+=+s.nights||0;});const r=tripKm(t,st,null,true);road+=r.km;if(r.approx)approx=1;});
   if(!n)return '';
-  const road=Math.round(air*ROAD/10)*10;
   const tile=(v,l,cls,tip)=>`<div class="tot${cls?' '+cls:''}"${tip?` title="${esc(tip)}"`:''}><b>${v}</b><span>${l}</span></div>`;
   return `<section class="totals" aria-label="I numeri di Wanda"><div class="tothead">Con Wanda finora</div><div class="totrow">`
     +tile(nf(days),days===1?'giorno in viaggio':'giorni in viaggio','hot')
-    +tile('≈ '+nf(road),'km percorsi','hot','Stima su strada: distanza in linea d\'aria tra le tappe × 1,25 ('+nf(air)+' km in linea d\'aria)')
+    +tile(kmTxt({km:Math.round(road/10)*10,approx}),'km percorsi','hot','Km su strada tra le tappe, con andata e ritorno da casa per ogni viaggio')
     +tile(nf(nights),nights===1?'notte in van':'notti in van')
     +tile(n,n===1?'viaggio':'viaggi')
     +tile(nf(stops),stops===1?'tappa':'tappe','opt')
@@ -849,7 +860,7 @@ function goTrip(id){
 function openAll(){
   const ov=$('#ovAll');ov.classList.remove('hide');
   const ts=tripsByDate();const idx=new Map(ts.map((t,i)=>[t.id,i]));
-  const rows=ts.map(t=>{const st=stopsOf(t.id);let dist=0;for(let k=1;k<st.length;k++)dist+=km(st[k-1],st[k]);
+  const rows=ts.map(t=>{const st=stopsOf(t.id);const dist=tripKm(t,st,null,true).km;
     return{t,st,dist,year:st.length?st[0].date.slice(0,4):'Senza date',first:st.length?st[0].date:'',text:(t.name+' '+st.map(s=>(s.place||'')+' '+s.title).join(' ')).toLowerCase()};})
     .sort((a,b)=>(b.first||'0').localeCompare(a.first||'0'));
   const draw=q=>{
@@ -905,14 +916,14 @@ function renderContent(){
     return;
   }
   c.innerHTML='<ol class="stops">'+st.map((s,i)=>{
-    const prev=i?km(st[i-1],s):0,ph=s.photos||[];
+    const prev=stopLegKm(curTrip(),st,i),ph=s.photos||[],hm=tripHome(curTrip());
     return `<li class="stop${s.id===S.sel?' sel':''}" data-id="${esc(s.id)}"><div class="node">${i+1}</div><div class="card">
       ${S.canWrite?`<button class="editpen" data-edit type="button" aria-label="Modifica tappa" title="Modifica tappa">${PEN}</button>`:''}
       <div class="meta"><span class="date">${esc(fmtDate(s.date,{weekday:'short',day:'numeric',month:'short'}))}</span><span class="chip ${KCOL[s.kind]||''}">${kindIcon(s.kind)}${esc(s.kind||'')}</span></div>
       <h3>${esc(s.title)}</h3>
       ${s.place?`<p class="place">${esc(s.place)}</p>`:''}
       ${s.note?`<p class="note">${esc(s.note)}</p>`:''}
-      <div class="facts">${+s.nights?`<span>${s.nights} ${+s.nights===1?'notte':'notti'}</span>`:'<span>solo passaggio</span>'}${+s.cost?`<span>${nf(s.cost)} €</span>`:''}${i?`<span>+${nf(prev)} km</span>`:'<span>partenza</span>'}</div>
+      <div class="facts">${+s.nights?`<span>${s.nights} ${+s.nights===1?'notte':'notti'}</span>`:'<span>solo passaggio</span>'}${+s.cost?`<span>${nf(s.cost)} €</span>`:''}${prev.km?`<span>+${kmTxt(prev)} km${!i&&hm?' da '+esc(hm.name):''}</span>`:(i?'':'<span>partenza</span>')}</div>
       ${ph.length?`<div class="strip">${ph.slice(0,4).map((p,k)=>`<img loading="lazy" data-ph="${k}" src="${esc(photoUrl(p))}" alt="">`).join('')}${ph.length>4?`<div class="more" data-ph="4">+${ph.length-4}</div>`:''}</div>`:''}
       <div class="actions"><a class="btn sm nav" href="${navUrl(s)}" target="_blank" rel="noopener">${NAV_SVG}Naviga</a><button class="btn sm" data-onmap type="button">Sulla mappa</button></div>
     </div></li>`;}).join('')+'</ol>';
@@ -942,20 +953,78 @@ window.addEventListener('scroll',closeMenu,{passive:true});
 
 /* ---------- giorno per giorno e racconto (tutti i viaggi) ---------- */
 const stopsOf=tid=>S.stops.filter(s=>s.tripId===tid).sort((a,b)=>(a.date||'').localeCompare(b.date||'')||(a.createdAt||0)-(b.createdAt||0));
+
+/* ---------- percorsi su strada (OSRM) con andata e ritorno da casa ---------- */
+const HOME={name:'Milano',lat:45.46419,lon:9.18963};
+const tripHome=t=>!t||t.fromHome===false?null:(t.home&&isFinite(t.home.lat)?t.home:HOME);
+const legKey=(a,b)=>a.lat.toFixed(4)+','+a.lon.toFixed(4)+'>'+b.lat.toFixed(4)+','+b.lon.toFixed(4);
+S.legs={};S.legFail={};
+try{Object.assign(S.legs,JSON.parse(localStorage.getItem('wanda.legs')||'{}'))}catch(e){}
+// tratti del viaggio: casa → 1ª tappa, tappa → tappa, ultima tappa → casa (tappe nello stesso posto saltate)
+function legPairs(t,st){
+  const h=tripHome(t),out=[];
+  st.forEach((b,i)=>{const a=i?st[i-1]:h;if(a&&km(a,b)>0.05)out.push({key:legKey(a,b),a,b,i,home:!i});});
+  if(h&&st.length){const a=st[st.length-1];if(km(a,h)>0.05)out.push({key:legKey(a,h),a,b:h,i:st.length,home:true,ret:true});}
+  return out;
+}
+function getLeg(t,p){const g=S.legs[p.key]||(t&&t.legs&&t.legs[p.key]);if(!g)queueLeg(p);return g||null;}
+// km di un tratto: su strada se già calcolato, altrimenti stima dalla linea d'aria
+function legKm(t,p){const g=getLeg(t,p);return g?{km:g.km}:{km:km(p.a,p.b)*1.25,approx:1};}
+// km fino alla tappa "upto" (compresa); con ret anche il rientro a casa
+function tripKm(t,st,upto,ret){
+  if(upto==null)upto=st.length-1;let k=0,approx=0;
+  legPairs(t,st).forEach(p=>{if(p.ret?ret:p.i<=upto){const r=legKm(t,p);k+=r.km;if(r.approx)approx=1;}});
+  return{km:k,approx};
+}
+const kmTxt=r=>(r.approx?'≈ ':'')+nf(r.km);
+function stopLegKm(t,st,i){const p=legPairs(t,st).find(x=>x.i===i&&!x.ret);return p?legKm(t,p):{km:0};}
+function decodePoly(s){const pts=[];let i=0,lat=0,lon=0;
+  while(i<s.length){for(let w=0;w<2;w++){let b,sh=0,r=0;do{b=s.charCodeAt(i++)-63;r|=(b&31)<<sh;sh+=5;}while(b>=32);const d=(r&1)?~(r>>1):(r>>1);if(w)lon+=d;else lat+=d;}pts.push([lat/1e5,lon/1e5]);}
+  return pts;}
+const legQ=[],legWant=new Set();let legBusy=false,legT=null;
+function queueLeg(p){if(legWant.has(p.key)||S.legFail[p.key]||S.offline||navigator.onLine===false)return;legWant.add(p.key);legQ.push(p);if(!legBusy)pumpLegs();}
+async function pumpLegs(){
+  legBusy=true;
+  while(legQ.length){const p=legQ.shift();
+    try{const r=await fetch('https://router.project-osrm.org/route/v1/driving/'+p.a.lon.toFixed(5)+','+p.a.lat.toFixed(5)+';'+p.b.lon.toFixed(5)+','+p.b.lat.toFixed(5)+'?overview=simplified&geometries=polyline');
+      const js=await r.json();const rt=js&&js.code==='Ok'&&js.routes&&js.routes[0];
+      if(rt)S.legs[p.key]={km:Math.round(rt.distance/100)/10,p:rt.geometry};else S.legFail[p.key]=1;}
+    catch(e){S.legFail[p.key]=1;}
+    legDirty();await new Promise(res=>setTimeout(res,1100)); // il servizio gratuito chiede al massimo ~1 richiesta al secondo
+  }
+  legBusy=false;legDirty();
+}
+function legDirty(){clearTimeout(legT);legT=setTimeout(()=>{try{localStorage.setItem('wanda.legs',JSON.stringify(S.legs))}catch(e){}
+  if(!S.loading)renderAll();if(!legBusy)persistLegs();},1500);}
+// salva nel viaggio i percorsi calcolati, così gli altri dispositivi non devono ricalcolarli
+function persistLegs(){
+  if(!S.canWrite||S.offline||!sb)return;
+  S.trips.forEach(t=>{const st=stopsOf(t.id);if(!st.length)return;const need={};let ok=true;
+    legPairs(t,st).forEach(p=>{const g=S.legs[p.key]||(t.legs&&t.legs[p.key]);if(g)need[p.key]={km:g.km,p:g.p};else ok=false;});
+    if(!ok)return;const cur=t.legs||{};const ks=Object.keys(need);
+    if(ks.length===Object.keys(cur).length&&ks.every(k=>cur[k]&&cur[k].km===need[k].km))return;
+    const d=Object.assign({},t);delete d.id;d.legs=need;store.put('trips',t.id,d).catch(()=>{});});
+}
 const hasStops=()=>S.stops.some(s=>S.trips.some(t=>t.id===s.tripId));
 function tripsByDate(){const f=id=>{const s=stopsOf(id);return s.length?s[0].date:'9999';};return[...S.trips].sort((a,b)=>f(a.id).localeCompare(f(b.id)));}
 const SCENE='<svg class="scene" viewBox="0 0 600 120" preserveAspectRatio="xMidYMax slice" aria-hidden="true"><circle cx="470" cy="68" r="27" fill="#FFF4CC" opacity=".22"/><circle cx="470" cy="68" r="16" fill="#FFF6D8" opacity=".95"/><path d="M0 120V80C60 62 110 68 160 54C210 42 262 72 322 64C382 56 432 42 492 60C542 74 572 66 600 72V120Z" fill="#fff" opacity=".18"/><path d="M0 120V94C70 82 130 90 200 80C270 70 330 92 400 86C470 80 530 94 600 88V120Z" fill="#fff" opacity=".3"/><g fill="#fff" opacity=".55"><path d="M138 88c-2-6-3-15-.6-24c.6-2 1.6-2 2.2 0c2.4 9 1.4 18-.6 24z"/><path d="M148 87c-2-7-3-18-.6-28c.6-2 1.6-2 2.2 0c2.4 10 1.4 21-.6 28z"/><path d="M158 86c-1.6-5-2.4-12-.4-19c.5-1.6 1.3-1.6 1.8 0c2 7 1.2 14-.4 19z"/></g><path d="M0 120V107C120 99 240 105 330 101C430 97 520 107 600 103V120Z" fill="#fff" opacity=".5"/><path d="M0 116C150 110 300 114 420 110C500 107 560 110 600 108" fill="none" stroke="#fff" stroke-width="2.6" stroke-dasharray="12 9" opacity=".9"/><g transform="translate(372 96)"><path d="M1 12V3.5Q1 1.5 3 1.5H16Q17.5 1.5 18 2.6L20.5 6.6Q23.5 7.4 24 9.6V12Z" fill="#fff"/><path d="M16.4 3.2L18.6 6.6H16.4Z" fill="#000" opacity=".25"/><circle cx="6" cy="12.4" r="2.2" fill="#000" opacity=".45"/><circle cx="19" cy="12.4" r="2.2" fill="#000" opacity=".45"/></g></svg>';
+// giorni del viaggio: dal primo giorno al giorno del rientro (il mattino dopo l'ultima notte).
+// Ogni giorno raccoglie tutte le tappe con quella data.
 function daysOf(st){
   const add=(d,n)=>{const x=new Date(d+'T12:00:00Z');x.setUTCDate(x.getUTCDate()+n);return x.toISOString().slice(0,10);};
-  const span=s=>Math.max(1,+s.nights||0);
-  let end=st[0].date;st.forEach(s=>{const e=add(s.date,span(s)-1);if(e>end)end=e;});
+  const diff=(a,b)=>Math.round((new Date(a+'T12:00:00Z')-new Date(b+'T12:00:00Z'))/86400000);
+  let end=st[0].date;st.forEach(s=>{const e=add(s.date,Math.max(0,+s.nights||0));if(e>end)end=e;});
   const out=[];let d=st[0].date,n=0;
   while(d<=end&&n<400){
-    let idx=-1;st.forEach((s,i)=>{if(s.date<=d&&d<add(s.date,span(s)))idx=i;});
-    let kind='start',night=0;
-    if(idx<0){st.forEach((s,i)=>{if(s.date<d)idx=i;});kind='gap';}
-    else if(st[idx].date!==d){kind='stay';night=Math.round((new Date(d+'T12:00:00Z')-new Date(st[idx].date+'T12:00:00Z'))/86400000)+1;}
-    out.push({date:d,idx,kind,night,s:st[idx]});d=add(d,1);n++;
+    const idxs=[];st.forEach((s,i)=>{if(s.date===d)idxs.push(i);});
+    let kind='start',night=0,idx;
+    if(idxs.length)idx=idxs[idxs.length-1];
+    else{idx=-1;st.forEach((s,i)=>{if(s.date<d)idx=i;});const s=st[idx];
+      if(s&&d<add(s.date,+s.nights||0)){kind='stay';night=diff(d,s.date)+1;}
+      else kind=d===end?'end':'gap';
+      // il giorno del rientro si riparte da dove si è dormito la notte prima
+      if(kind==='end'){const y=add(d,-1);st.forEach((x,i)=>{if(x.date<=y&&y<add(x.date,+x.nights||0))idx=i;});}}
+    out.push({date:d,idx,idxs,kind,night,s:st[idx]});d=add(d,1);n++;
   }
   return out;
 }
@@ -963,7 +1032,7 @@ function buildAll(){
   const items=[],dayKs=[],ranges=[];
   const ts=tripsByDate().filter(t=>stopsOf(t.id).length);
   ts.forEach((t,ti)=>{
-    const st=stopsOf(t.id),ds=daysOf(st);let dist=0;for(let i=1;i<st.length;i++)dist+=km(st[i-1],st[i]);
+    const st=stopsOf(t.id),ds=daysOf(st);const dist=tripKm(t,st,null,true);
     const first=dayKs.length;
     items.push({type:'trip',t,ti,n:ts.length,days:ds.length,dist,first:ds[0].date,last:ds[ds.length-1].date,d:first});
     ds.forEach((d,i)=>{items.push(Object.assign({type:'day',t,ti,i,total:ds.length,st},d));dayKs.push(items.length-1);});
@@ -988,15 +1057,15 @@ function updateDay(i){
   if(it.t.id!==S.tripId){S.tripId=it.t.id;try{localStorage.setItem('van.trip',S.tripId)}catch(e){}S.view=null;S.userView=false;S.vanPos=null;S.dayStopIdx=null;S.vanAnim++;renderTop();}
   const first=S.dayCur!==i||S.dayStopIdx==null;S.dayCur=i;
   const bar=document.querySelector('.dbar');if(!bar)return;
-  const st=it.st;let dist=0;for(let k=1;k<=it.idx;k++)dist+=km(st[k-1],st[k]);
+  const st=it.st;const dist=tripKm(it.t,st,it.idx,it.kind==='end');S.dayEnd=it.kind==='end';
   bar.querySelector('#dTrip').textContent='Viaggio '+(it.ti+1)+' di '+A.ts.length+' · '+it.t.name;
   bar.querySelector('#dN').textContent=it.i+1;bar.querySelector('#dTot').textContent='/ '+it.total;
   bar.querySelector('#dDate').textContent=fmtDate(it.date,{weekday:'long',day:'numeric',month:'long'});
-  bar.querySelector('#dKm').textContent=(it.s?it.s.place||it.s.title:'')+' · '+nf(dist)+' km percorsi';
+  const h=tripHome(it.t);bar.querySelector('#dKm').textContent=(it.kind==='end'&&h?'Rientro a '+h.name:(it.s?it.s.place||it.s.title:''))+' · '+kmTxt(dist)+' km percorsi';
   const r=bar.querySelector('#dRange');r.min=rg.start;r.max=rg.end;r.value=i;
   document.querySelectorAll('.dcard').forEach(c=>{const k=+c.dataset.d;c.classList.toggle('cur',k===i);c.classList.toggle('next',k>i);});
   S.dayStopIdx=it.idx;S.sel=it.s?it.s.id:null;
-  if(it.s){const to={lat:it.s.lat,lon:it.s.lon};if(!S.vanPos){S.vanPos=to;renderMap();}else if(first){renderMap();animVan(to);}}
+  if(it.s){const hh=tripHome(it.t);const to=it.kind==='end'&&hh?{lat:hh.lat,lon:hh.lon}:{lat:it.s.lat,lon:it.s.lon};if(!S.vanPos){S.vanPos=to;renderMap();}else if(first){renderMap();animVan(to);}}
 }
 function goDay(i,scroll,instant){
   const A=S.all;if(!A)return;i=Math.max(0,Math.min(A.dayKs.length-1,i));updateDay(i);if(!scroll)return;S.lock=Date.now()+900;
@@ -1024,11 +1093,14 @@ function renderDays(c){
   A.items.forEach((it,k)=>{
     if(it.type==='trip'){
       const t=it.t;
-      h+=`<div class="tbanner${coverUrl(t.id)?' photo':''}" data-d="${it.d}" style="background:${esc(tripBg(t.id))}"><div class="tb-k">Viaggio ${it.ti+1} di ${it.n}</div><h2>${esc(t.name)}</h2><div class="tb-d">${esc(fmtDate(it.first,{day:'numeric',month:'long'}))} → ${esc(fmtDate(it.last,{day:'numeric',month:'long',year:'numeric'}))} · ${it.days} ${it.days===1?'giorno':'giorni'} · ${nf(it.dist)} km</div>${t.story?`<p>${esc(t.story)}</p>`:''}${tripScene(t.id)}</div>`;return;}
+      h+=`<div class="tbanner${coverUrl(t.id)?' photo':''}" data-d="${it.d}" style="background:${esc(tripBg(t.id))}"><div class="tb-k">Viaggio ${it.ti+1} di ${it.n}</div><h2>${esc(t.name)}</h2><div class="tb-d">${esc(fmtDate(it.first,{day:'numeric',month:'long'}))} → ${esc(fmtDate(it.last,{day:'numeric',month:'long',year:'numeric'}))} · ${it.days} ${it.days===1?'giorno':'giorni'} · ${kmTxt(it.dist)} km</div>${t.story?`<p>${esc(t.story)}</p>`:''}${tripScene(t.id)}</div>`;return;}
     const di=A.dayKs.indexOf(k),s=it.s,st=it.st;let body='';const dl=esc(fmtDate(it.date,{weekday:'short',day:'numeric',month:'long'}));
-    if(it.kind==='start'){const ph=s.photos||[];const pk=it.idx?km(st[it.idx-1],s):0;
-      body=`<div class="dc"><div class="dd">${dl} · <span class="chip ${KCOL[s.kind]||''}">${kindIcon(s.kind)}${esc(s.kind||'')}</span></div><h3>${esc(s.title)}</h3><p class="place">${esc(s.place||'')}</p>${s.note?`<p class="note">${esc(s.note)}</p>`:''}<div class="facts">${it.idx?`<span>+${nf(pk)} km</span>`:'<span>partenza</span>'}${+s.nights?`<span>${s.nights} ${+s.nights===1?'notte':'notti'}</span>`:''}${+s.cost?`<span>${nf(s.cost)} €</span>`:''}</div>${ph.length?`<div class="strip">${ph.slice(0,4).map((p,j)=>`<img loading="lazy" data-ph="${j}" data-st="${esc(s.id)}" src="${esc(photoUrl(p))}" alt="">`).join('')}${ph.length>4?`<div class="more" data-ph="4" data-st="${esc(s.id)}">+${ph.length-4}</div>`:''}</div>`:''}${S.canWrite?`<button class="editpen" data-edit="${esc(s.id)}" type="button" aria-label="Modifica tappa" title="Modifica tappa">${PEN}</button>`:''}</div>`;}
+    const stopBlock=(s,i)=>{const ph=s.photos||[];const pk=stopLegKm(it.t,st,i);const hm=tripHome(it.t);
+      return `<div class="dstop"><div class="dd">${dl} · <span class="chip ${KCOL[s.kind]||''}">${kindIcon(s.kind)}${esc(s.kind||'')}</span></div><h3>${esc(s.title)}</h3><p class="place">${esc(s.place||'')}</p>${s.note?`<p class="note">${esc(s.note)}</p>`:''}<div class="facts">${pk.km?`<span>+${kmTxt(pk)} km${!i&&hm?' da '+esc(hm.name):''}</span>`:(i?'':'<span>partenza</span>')}${+s.nights?`<span>${s.nights} ${+s.nights===1?'notte':'notti'}</span>`:''}${+s.cost?`<span>${nf(s.cost)} €</span>`:''}</div>${ph.length?`<div class="strip">${ph.slice(0,4).map((p,j)=>`<img loading="lazy" data-ph="${j}" data-st="${esc(s.id)}" src="${esc(photoUrl(p))}" alt="">`).join('')}${ph.length>4?`<div class="more" data-ph="4" data-st="${esc(s.id)}">+${ph.length-4}</div>`:''}</div>`:''}${S.canWrite?`<button class="editpen" data-edit="${esc(s.id)}" type="button" aria-label="Modifica tappa" title="Modifica tappa">${PEN}</button>`:''}</div>`;};
+    if(it.kind==='start'){body=`<div class="dc">${it.idxs.map(i=>stopBlock(st[i],i)).join('')}</div>`;}
     else if(it.kind==='stay'){body=`<div class="dc"><div class="dd">${dl}</div><div class="stayline">Ancora a <b>${esc(s.place||s.title)}</b> · notte ${it.night} di ${Math.max(1,+s.nights)}</div></div>`;}
+    else if(it.kind==='end'){const hm=tripHome(it.t);const rp=legPairs(it.t,st).find(p=>p.ret);const rk=rp?legKm(it.t,rp):null;
+      body=`<div class="dc"><div class="dd">${dl}</div><div class="stayline">Ultimo giorno: si riparte da <b>${esc(s.place||s.title)}</b>${hm?` e si rientra a <b>${esc(hm.name)}</b>`:''}${rk&&rk.km?` · ${kmTxt(rk)} km`:''}</div></div>`;}
     else{body=`<div class="dc"><div class="dd">${dl}</div><div class="stayline">Nessuna tappa registrata${s?' dopo '+esc(s.place||s.title):''}</div></div>`;}
     h+=`<div class="dcard ${it.kind}" data-d="${di}"><div class="dn"><small>giorno</small><b>${it.i+1}</b></div>${body}</div>`;
   });
@@ -1053,20 +1125,20 @@ function renderStory(c){
   const chaps=[];let h='<div class="book">';
   const ts=tripsByDate().filter(t=>stopsOf(t.id).length);
   ts.forEach((t,ti)=>{
-    const st=stopsOf(t.id);let dist=0;for(let i=1;i<st.length;i++)dist+=km(st[i-1],st[i]);
+    const st=stopsOf(t.id);const dist=tripKm(t,st,null,true);
     const nights=st.reduce((a,s)=>a+(+s.nights||0),0);
     const range=fmtDate(st[0].date,{day:'numeric',month:'long'})+(st[st.length-1].date!==st[0].date?' – '+fmtLong(st[st.length-1].date):' '+new Date(st[0].date+'T12:00:00').getFullYear());
     h+='<section class="cover'+(coverUrl(t.id)?' photo':'')+'" data-trip="'+esc(t.id)+'" style="background:'+esc(tripBg(t.id))+'"><div class="kicker">Il racconto di Wanda · BoxLife 540 · viaggio '+(ti+1)+' di '+ts.length+'</div><h2>'+esc(t.name)+'</h2><div class="when">'+esc(range)+'</div>'+(t.story?'<p class="intro">'+esc(t.story)+'</p>':(S.canWrite?'<p class="intro">Scrivi qui come è iniziato il viaggio: apri “Modifica viaggio” e racconta la partenza.</p>':''))+tripScene(t.id)+'</section>';
     st.forEach((s,i)=>{
       const ph=s.photos||[];chaps.push(s);
-      if(i)h+='<div class="leg">'+nf(km(st[i-1],s))+' km</div>';
+      {const lk=stopLegKm(t,st,i);if(lk.km)h+='<div class="leg">'+(i?'':'da '+esc((tripHome(t)||{}).name||'')+' · ')+kmTxt(lk)+' km</div>';}
       h+='<article class="chap" data-c="'+(chaps.length-1)+'"><div class="no">Capitolo '+(i+1)+' · '+esc(fmtDate(s.date,{weekday:'long',day:'numeric',month:'long'}))+'</div><h3>'+esc(s.title)+'</h3><div class="where">'+esc([s.place,s.kind].filter(Boolean).join(' · '))+(+s.nights?' · '+s.nights+(+s.nights===1?' notte':' notti'):'')+'</div>'
         +(ph.length?'<figure class="polaroid"><img loading="lazy" data-ph="0" src="'+esc(photoUrl(ph[0]))+'" alt="'+esc(s.title)+'"><figcaption>'+esc(s.title)+'</figcaption></figure>':'')
         +(s.note?'<div class="text">'+esc(s.note)+'</div>':'<div class="text none">Qui manca ancora il ricordo di questa tappa.</div>')
         +(ph.length>1?'<div class="more">'+ph.slice(1).map((p,k)=>'<img loading="lazy" data-ph="'+(k+1)+'" src="'+esc(photoUrl(p))+'" alt="">').join('')+'</div>':'')
         +'<div><a class="btn sm" href="#" data-map="'+esc(s.id)+'">Vedi sulla mappa</a>'+(S.canWrite?' <button class="btn sm" data-edit="'+esc(s.id)+'" type="button">Scrivi il ricordo</button>':'')+'</div></article>';
     });
-    h+='<section class="endcard"><h3>Il viaggio in breve</h3><p>'+st.length+(st.length===1?' tappa':' tappe')+', '+nights+(nights===1?' notte':' notti')+' e circa '+nf(dist)+' km in linea d\'aria. Tutto con Wanda.</p>'+(t.best?'<p class="best"><b>Il ricordo più bello:</b> '+esc(t.best)+'</p>':'')+'</section>';
+    h+='<section class="endcard"><h3>Il viaggio in breve</h3><p>'+st.length+(st.length===1?' tappa':' tappe')+', '+nights+(nights===1?' notte':' notti')+' e '+(dist.approx?'circa ':'')+nf(dist.km)+' km su strada'+(tripHome(t)?', andata e ritorno da '+esc(tripHome(t).name):'')+'. Tutto con Wanda.</p>'+(t.best?'<p class="best"><b>Il ricordo più bello:</b> '+esc(t.best)+'</p>':'')+'</section>';
   });
   c.innerHTML=h+'</div>';
   c.querySelectorAll('[data-ph]').forEach(im=>{const s=chaps[+im.closest('.chap').dataset.c];im.onclick=()=>openLb((s.photos||[]).map(p=>({src:photoUrl(p),cap:s.title+' · '+fmtDate(s.date),sid:s.id,pid:p.id})),+im.dataset.ph);});
@@ -1079,6 +1151,7 @@ function openTrip(t){
   const f=$('#fTrip');
   f.innerHTML=`<h2>${t?'Modifica viaggio':'Nuovo viaggio'}</h2>
   <div class="fld"><label for="tName">Nome</label><input id="tName" required maxlength="80" placeholder="Es. Toscana e Maremma, ottobre" value="${esc(t?t.name:'')}"></div>
+  <div class="fld"><label class="chk"><input type="checkbox" id="tHomeOn"${!t||t.fromHome!==false?' checked':''}> Partenza e rientro da casa</label><input id="tHome" list="gaz" maxlength="80" placeholder="Milano" value="${esc(t&&t.home&&t.home.name?t.home.name:HOME.name)}"><small>Serve a contare i km di andata e ritorno e a disegnarli sulla mappa.</small></div>
   <div class="fld"><label for="tStory">Come è iniziato (apre il racconto)</label><textarea id="tStory" maxlength="1500" placeholder="Il giorno della partenza, l'idea, che tempo faceva, chi c'era">${esc(t?t.story||'':'')}</textarea></div>
   <div class="fld"><label for="tBest">Il ricordo più bello</label><input id="tBest" maxlength="300" placeholder="Una scena, un posto, una frase" value="${esc(t?t.best||'':'')}"></div>
   <div class="fld"><label for="tNotes">Descrizione breve</label><textarea id="tNotes" maxlength="500" placeholder="Con chi, quale van, tema del viaggio">${esc(t?t.notes||'':'')}</textarea></div>
@@ -1091,7 +1164,21 @@ function openTrip(t){
     const ids=S.stops.filter(s=>s.tripId===t.id);try{for(const s of ids)await store.del('stops',s.id);await store.del('trips',t.id);}catch(e){$('#tErr').textContent='Non sono riuscito a eliminare: '+(e.message||e.code);return;}
     $('#ovTrip').classList.add('hide');S.tripId=null;S.sel=null;renderAll();};}
   f.onsubmit=async e=>{e.preventDefault();const name=$('#tName').value.trim();if(!name)return;
-    const id=t?t.id:uid();try{await store.put('trips',id,{name,notes:$('#tNotes').value.trim(),story:$('#tStory').value.trim(),best:$('#tBest').value.trim(),createdAt:t?t.createdAt:Date.now()});}catch(x){$('#tErr').textContent='Salvataggio non riuscito: '+(x.message||x.code);return;}
+    const fromHome=$('#tHomeOn').checked,hn=$('#tHome').value.trim()||HOME.name;let home=t&&t.home||null;
+    if(fromHome&&(!home||home.name!==hn)){
+      if(hn.toLowerCase()===HOME.name.toLowerCase())home=null;
+      else{const g=GAZ.find(x=>x[0].toLowerCase()===hn.toLowerCase());
+        if(g)home={name:g[0],lat:g[1],lon:g[2]};
+        else{$('#tErr').textContent='Cerco “'+hn+'”…';
+          try{const r=await fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&accept-language=it&q='+encodeURIComponent(hn));const js=await r.json();
+            if(!js.length){$('#tErr').textContent='Non trovo “'+hn+'”: scrivi il nome di una città o di un paese.';return;}
+            home={name:hn,lat:+(+js[0].lat).toFixed(5),lon:+(+js[0].lon).toFixed(5)};}
+          catch(x){$('#tErr').textContent='Ricerca del luogo non disponibile ora: riprova più tardi.';return;}}}}
+    // conservo i campi già presenti nel viaggio (es. i percorsi calcolati)
+    const d=Object.assign({},t||{});delete d.id;
+    Object.assign(d,{name,notes:$('#tNotes').value.trim(),story:$('#tStory').value.trim(),best:$('#tBest').value.trim(),createdAt:t?t.createdAt:Date.now(),fromHome,home});
+    if(!d.home)delete d.home;
+    const id=t?t.id:uid();try{await store.put('trips',id,d);}catch(x){$('#tErr').textContent='Salvataggio non riuscito: '+(x.message||x.code);return;}
     S.tripId=id;try{localStorage.setItem('van.trip',id)}catch(x){}S.view=null;S.userView=false;$('#ovTrip').classList.add('hide');renderAll();};
 }
 
@@ -1301,7 +1388,7 @@ async function startApp(session){
   if((t.error||s.error)&&goOffline(email))return;
   if(t.error||s.error){$('#notice').innerHTML='<p class="notice">Non riesco a leggere i dati: '+esc((t.error||s.error).message)+'</p>';}
   S.trips=(t.data||[]).map(r=>Object.assign({id:r.id},r.data));S.stops=(s.data||[]).map(r=>Object.assign({id:r.id},r.data));
-  S.loading=false;renderAll();saveCache();signPhotos();
+  S.loading=false;renderAll();saveCache();signPhotos();setTimeout(persistLegs,4000);
   let tmo=null;const later=()=>{clearTimeout(tmo);tmo=setTimeout(()=>{renderAll();signPhotos();},120);};
   sb.channel('wanda').on('postgres_changes',{event:'*',schema:'public',table:'trips'},p=>{if(p.eventType==='DELETE')removeLocal('trips',p.old.id);else upsertLocal('trips',p.new.id,p.new.data);later();})
     .on('postgres_changes',{event:'*',schema:'public',table:'stops'},p=>{if(p.eventType==='DELETE')removeLocal('stops',p.old.id);else upsertLocal('stops',p.new.id,p.new.data);later();}).subscribe();
