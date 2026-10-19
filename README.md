@@ -42,6 +42,9 @@ Dopo un paio di minuti il diario è su `https://marthack-88.github.io/wanda-in-v
   dispositivo (in sola lettura). Uscendo con **Esci** la copia viene cancellata.
 - **Nuova tappa**: "Usa la mia posizione" compila luogo e coordinate dal GPS; costo e coordinate
   sono in "Altri dettagli". "Naviga" apre Google Maps verso la tappa.
+- **Calendario**: tutti i giorni con Wanda, mese per mese. I giorni con una nota di diario sono
+  pieni (arancio/rosa), gli altri giorni in viaggio sono chiari. Toccando un giorno si vede dove
+  eravate e la nota; "Apri nei giorni" porta a quel giorno del diario.
 - **Backup** (menu **⋯**) scarica un file con tutti i viaggi e le note. Fatelo ogni tanto e conservatelo.
 - Per autorizzare un'altra persona: in Supabase → SQL Editor esegui
   `insert into public.members (email) values (lower('nuova@email.it'));`

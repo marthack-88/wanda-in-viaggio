@@ -527,6 +527,52 @@ body{min-height:100vh;background:transparent}
   .tot b{font-size:24px}
   .tot.opt{display:none}
 }
+/* ===== calendario: i giorni con Wanda, quelli con il diario in evidenza ===== */
+.cal{background:rgba(255,255,255,.92);border:1px solid rgba(255,255,255,.9);border-radius:22px;padding:16px 16px 14px;box-shadow:0 1px 2px rgba(60,30,90,.06),0 16px 32px -20px rgba(60,30,90,.4)}
+.calhead{display:flex;align-items:center;gap:8px}
+.calhead h2{flex:1;text-align:center;font-size:24px}
+.calhead button{width:40px;height:40px;flex:none;border-radius:12px;border:0;background:rgba(108,74,182,.08);font:600 20px var(--font-body);cursor:pointer;color:#5A3DA6}
+.calhead button:disabled{opacity:.3;cursor:default}
+.calsum{text-align:center;font:500 13px var(--font-body);color:var(--muted);margin:2px 0 14px}
+.calyh{font:600 11px var(--font-mono);letter-spacing:.06em;text-transform:uppercase;color:#6C4AB6;text-align:center;margin:0 0 6px}
+.calyear{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:3px;margin:0 0 14px}
+.cym{border:0;background:transparent;border-radius:9px;padding:5px 0 5px;font:600 11px var(--font-body);color:var(--muted);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0}
+.cym i{display:block;width:72%;height:5px;border-radius:3px;background:var(--line)}
+.cym.has i{background:#FFD2C2}.cym.dia i{background:linear-gradient(90deg,#FF8A5B,#FF4F7B)}
+.cym.on{background:rgba(108,74,182,.12);color:var(--ink)}
+.calgrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));row-gap:4px}
+.cwd{text-align:center;font:600 11px var(--font-mono);color:var(--muted);padding-bottom:4px}
+.cd{position:relative;height:44px;display:grid;place-items:center;font:600 15px var(--font-body);font-variant-numeric:tabular-nums;color:#8C9993;border:0;background:none;padding:0;min-width:0}
+.cd b{position:relative;z-index:1;width:36px;height:36px;display:grid;place-items:center;border-radius:50%;font-weight:inherit}
+button.cd{cursor:pointer;color:#B6345F}
+button.cd::before{content:"";position:absolute;top:5px;bottom:5px;left:0;right:0;background:#FFE3D8}
+button.cd.l::before{left:4px;border-radius:99px 0 0 99px}
+button.cd.r::before{right:4px;border-radius:0 99px 99px 0}
+button.cd.l.r::before{border-radius:99px}
+.cd.dia b{background:linear-gradient(135deg,#FF8A5B,#FF4F7B);color:#fff;box-shadow:0 4px 10px -4px rgba(255,79,123,.8)}
+.cd.today b{box-shadow:inset 0 0 0 2px #6C4AB6}
+.cd.dia.today b{box-shadow:inset 0 0 0 2px #fff,0 0 0 2px #6C4AB6}
+.cd.sel b{box-shadow:0 0 0 3px #fff,0 0 0 5px #6C4AB6}
+.callegend{display:flex;flex-wrap:wrap;gap:6px 16px;justify-content:center;margin-top:12px;font:500 12px var(--font-body);color:var(--muted)}
+.callegend span{display:inline-flex;align-items:center;gap:6px}
+.callegend i{width:14px;height:14px;border-radius:50%}
+.callegend .l1{background:linear-gradient(135deg,#FF8A5B,#FF4F7B)}.callegend .l2{background:#FFE3D8}.callegend .l3{box-shadow:inset 0 0 0 2px #6C4AB6}
+.caltrips{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.ctrip{border:1px solid var(--line);background:#fff;border-radius:99px;padding:5px 12px 5px 6px;display:inline-flex;align-items:center;gap:8px;font:600 13px var(--font-body);cursor:pointer;max-width:100%;min-width:0;text-align:left}
+.ctrip i{width:18px;height:18px;border-radius:50%;flex:none}
+.ctrip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ctrip small{font:500 11px var(--font-mono);color:var(--muted);white-space:nowrap}
+.cdet{margin-top:14px;display:grid;gap:12px}
+.ce{background:rgba(255,255,255,.92);border:1px solid rgba(255,255,255,.9);border-radius:20px;padding:16px 18px;box-shadow:0 1px 2px rgba(60,30,90,.06),0 16px 32px -20px rgba(60,30,90,.4);min-width:0}
+.ce .ck{font:600 11px var(--font-mono);letter-spacing:.12em;text-transform:uppercase;color:#6C4AB6;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ce h3{font-size:22px;margin:6px 0 0}
+.ce .where{margin:6px 0 0;font-weight:600;color:#B6345F}
+.ce .cs{margin-top:12px;padding-top:12px;border-top:1px dashed rgba(108,74,182,.25)}
+.ce .cs h4{margin:0;font:700 16px/1.25 var(--font-display)}
+.ce .cs p{margin:6px 0 0;color:#3D4D45}
+.ce .nodia{color:var(--muted);font-style:italic}
+.calhint{text-align:center;color:var(--muted);margin:14px 0 0;font-size:14px}
+@media (max-width:420px){.cd{height:40px;font-size:14px}.cd b{width:32px;height:32px}.cal{padding:14px 10px 12px}.cym{font-size:10px}}
 </style>
 </head>
 <body>
@@ -636,6 +682,7 @@ body{min-height:100vh;background:transparent}
     <div class="tabs" role="tablist">
       <button class="tab" role="tab" id="tabStops" aria-selected="true"><svg viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg><span>Tappe</span></button>
       <button class="tab" role="tab" id="tabDays" aria-selected="false"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg><span>Giorni</span></button>
+      <button class="tab" role="tab" id="tabCal" aria-selected="false"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4M8 14h.01M12 14h.01M16 14h.01M8 17h.01M12 17h.01"/></svg><span>Calendario</span></button>
       <button class="tab" role="tab" id="tabStory" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M12 6.5C10 5 7 4.5 3.5 5v13.5c3.5-.5 6.5 0 8.5 1.5 2-1.5 5-2 8.5-1.5V5C17 4.5 14 5 12 6.5zM12 6.5V20"/></svg><span>Racconto</span></button>
       <button class="tab" role="tab" id="tabMap" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M9 4L3.5 6v14L9 18l6 2 5.5-2V4L15 6 9 4zM9 4v14M15 6v14"/></svg><span>Mappa</span></button>
       <button class="tab" role="tab" id="tabPhotos" aria-selected="false"><svg viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><circle cx="9" cy="10" r="1.8"/><path d="M20.5 16l-5-5-9 8.5"/></svg><span>Foto</span></button>
@@ -884,6 +931,7 @@ function setTrip(id){
   document.querySelectorAll('.cdot').forEach(c=>c.classList.toggle('on',c.dataset.dot===id));
   $('#tripSel').value=id;
   if(S.tab==='days'&&S.all){const r=S.all.ranges.find(r=>r.t.id===id);if(r){goDay(r.start,true);S.lock=Date.now()+1800;return;}}
+  if(S.tab==='cal'){const ds=daysOf(stopsOf(id));if(ds.length&&!ds.some(d=>d.date.slice(0,7)===S.calM)){S.calM=ds[0].date.slice(0,7);S.calD=ds[0].date;}}
   if(S.tab==='story'){const el=document.querySelector('.cover[data-trip="'+CSS.escape(id)+'"]');if(el){el.scrollIntoView({behavior:'smooth',block:'start'});return;}}
   renderContent();renderMap();
 }
@@ -897,9 +945,10 @@ function renderMapTab(c){
 }
 function renderContent(){
   const c=$('#content');
-  $('#tabStops').setAttribute('aria-selected',S.tab==='stops');$('#tabPhotos').setAttribute('aria-selected',S.tab==='photos');$('#tabStory').setAttribute('aria-selected',S.tab==='story');document.querySelector('.layout').classList.toggle('story',S.tab==='story');$('#tabDays').setAttribute('aria-selected',S.tab==='days');$('#tabMap').setAttribute('aria-selected',S.tab==='map');if(S.tab!=='days')stopPlay();if(!S.pick)placeMap(null);
+  $('#tabStops').setAttribute('aria-selected',S.tab==='stops');$('#tabPhotos').setAttribute('aria-selected',S.tab==='photos');$('#tabStory').setAttribute('aria-selected',S.tab==='story');document.querySelector('.layout').classList.toggle('story',S.tab==='story');$('#tabDays').setAttribute('aria-selected',S.tab==='days');$('#tabMap').setAttribute('aria-selected',S.tab==='map');$('#tabCal').setAttribute('aria-selected',S.tab==='cal');if(S.tab!=='days')stopPlay();if(!S.pick)placeMap(null);
   if(S.loading){c.innerHTML='<div class="empty"><h2>Carico il diario…</h2><p>Un attimo, recupero i tuoi viaggi.</p></div>';return;}
   if(S.tab==='days'&&hasStops()){renderDays(c);return;}
+  if(S.tab==='cal'&&hasStops()){renderCal(c);return;}
   if(!S.trips.length){
     c.innerHTML=`<div class="empty"><h2>Il primo viaggio</h2><p>Crea un viaggio, poi aggiungi le tappe con data, luogo, note e foto. Le tappe compaiono sulla mappa unite dal percorso.</p><div class="row">${S.canWrite?'<button class="btn primary" id="emNew" type="button">Crea il primo viaggio</button>':''}${S.canWrite?'<button class="btn" id="emDemo" type="button">Vedi un viaggio d\'esempio</button>':''}</div></div>`;
     const a=$('#emNew');if(a)a.onclick=()=>openTrip(null);const b=$('#emDemo');if(b)b.onclick=loadDemo;return;
@@ -938,7 +987,7 @@ function renderAll(){ensureTrip();renderTop();renderContent();renderMap();
   $('#gaz').innerHTML=GAZ.map(g=>`<option value="${esc(g[0])}"></option>`).join('');}
 $('#tripSel').onchange=e=>{S.tripId=e.target.value;try{localStorage.setItem('van.trip',S.tripId)}catch(x){}S.sel=null;S.view=null;S.userView=false;renderAll();};
 const setTab=t=>{S.tab=t;if(t==='days')S.enterDays=true;renderContent();if(t!=='story'){if(!S.userView)S.view=null;reMap();}};
-$('#tabStops').onclick=()=>setTab('stops');$('#tabPhotos').onclick=()=>setTab('photos');$('#tabStory').onclick=()=>setTab('story');$('#tabDays').onclick=()=>setTab('days');$('#tabMap').onclick=()=>setTab('map');
+$('#tabStops').onclick=()=>setTab('stops');$('#tabPhotos').onclick=()=>setTab('photos');$('#tabStory').onclick=()=>setTab('story');$('#tabDays').onclick=()=>setTab('days');$('#tabMap').onclick=()=>setTab('map');$('#tabCal').onclick=()=>setTab('cal');
 $('#btnStopNew').onclick=()=>openStop(null);
 $('#btnTripNew').onclick=()=>openTrip(null);
 $('#btnTripEdit').onclick=()=>openTrip(curTrip());
@@ -1088,7 +1137,7 @@ function renderDays(c){
   const A=buildAll();S.all=A;
   if(S.enterDays||S.dayCur>=A.dayKs.length){
     const j=S.sel?A.dayKs.findIndex(k=>A.items[k].s&&A.items[k].s.id===S.sel):-1;const r=A.ranges.find(r=>r.t.id===S.tripId);
-    S.dayCur=j>=0?j:(r?r.start:0);}
+    S.dayCur=S.dayWant!=null?Math.min(S.dayWant,A.dayKs.length-1):j>=0?j:(r?r.start:0);S.dayWant=null;}
   let h=`<div class="dbar"><div class="dtrip" id="dTrip"></div><div class="big"><i>giorno</i> <b id="dN">1</b><span id="dTot"></span></div><div class="dmeta"><b id="dDate"></b><span id="dKm"></span></div><div class="dctl"><button type="button" id="tPrev" aria-label="Viaggio precedente" title="Viaggio precedente">«</button><button type="button" id="dPrev" aria-label="Giorno precedente">‹</button><button type="button" class="play" id="dPlay" aria-label="Riproduci">▶</button><button type="button" id="dNext" aria-label="Giorno successivo">›</button><button type="button" id="tNext" aria-label="Viaggio successivo" title="Viaggio successivo">»</button></div><input id="dRange" type="range" min="0" max="1" step="1" value="0" aria-label="Scorri i giorni del viaggio"><div class="mapslot mini" id="slotMini"></div></div><div class="days">`;
   A.items.forEach((it,k)=>{
     if(it.type==='trip'){
@@ -1120,6 +1169,76 @@ function renderDays(c){
     playT=setInterval(()=>{if(S.dayCur>=S.all.dayKs.length-1){stopPlay();return;}goDay(S.dayCur+1,true);},2200);};
   S.dayStopIdx=null;updateDay(S.dayCur);
   if(S.enterDays){S.enterDays=false;goDay(S.dayCur,true,true);}
+}
+// calendario: tutti i giorni passati con Wanda, mese per mese; i giorni con una nota di diario sono evidenziati
+const addDay=(d,n)=>{const x=new Date(d+'T12:00:00Z');x.setUTCDate(x.getUTCDate()+n);return x.toISOString().slice(0,10);};
+const addMonth=(m,n)=>{const x=new Date(m+'-15T12:00:00Z');x.setUTCMonth(x.getUTCMonth()+n);return x.toISOString().slice(0,7);};
+const todayIso=()=>{const t=new Date();return t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0');};
+const hasNote=s=>!!String(s.note||'').trim();
+function calData(){
+  const A=buildAll();S.all=A;const m=new Map();
+  A.dayKs.forEach((k,di)=>{const it=A.items[k];const ss=it.idxs.map(i=>it.st[i]);
+    const e={it,di,ss,diary:ss.some(hasNote)};if(!m.has(it.date))m.set(it.date,[]);m.get(it.date).push(e);});
+  return{A,m};
+}
+function calWhere(e){const it=e.it,s=it.s,hm=tripHome(it.t);
+  if(it.kind==='start')return e.ss.map(x=>x.place||x.title).filter((v,i,a)=>v&&a.indexOf(v)===i).join(' → ');
+  if(it.kind==='stay')return 'Ancora a '+(s.place||s.title)+' · notte '+it.night+' di '+Math.max(1,+s.nights);
+  if(it.kind==='end')return 'Si riparte da '+(s.place||s.title)+(hm?' e si rientra a '+hm.name:'');
+  return s?'In viaggio, dopo '+(s.place||s.title):'In viaggio';
+}
+function renderCal(c){
+  const {A,m}=calData();const dates=[...m.keys()].sort();const today=todayIso();
+  const lo=dates[0].slice(0,7),hi=[dates[dates.length-1].slice(0,7),today.slice(0,7)].sort()[1];
+  if(!S.calM){const r=A.ranges.find(r=>r.t.id===S.tripId);S.calM=(r?A.items[A.dayKs[r.start]].date:dates[dates.length-1]).slice(0,7);}
+  if(S.calM<lo)S.calM=lo;if(S.calM>hi)S.calM=hi;
+  const M=S.calM,y=+M.slice(0,4),mo=+M.slice(5,7);
+  const lead=(new Date(Date.UTC(y,mo-1,1)).getUTCDay()+6)%7,nd=new Date(Date.UTC(y,mo,0)).getUTCDate();
+  const title=new Date(y,mo-1,15).toLocaleDateString('it-IT',{month:'long',year:'numeric'});
+  // il giorno scelto resta se è in questo mese, altrimenti il primo con il diario (o il primo in viaggio)
+  if(!S.calD||S.calD.slice(0,7)!==M||!m.has(S.calD)){const md=dates.filter(d=>d.slice(0,7)===M);S.calD=md.find(d=>m.get(d).some(e=>e.diary))||md[0]||null;}
+  let grid=['L','M','M','G','V','S','D'].map(w=>'<span class="cwd">'+w+'</span>').join('');
+  for(let i=0;i<lead;i++)grid+='<span></span>';
+  let nT=0,nD=0;
+  for(let d=1;d<=nd;d++){const ds=M+'-'+String(d).padStart(2,'0'),es=m.get(ds),col=(lead+d-1)%7;
+    const cls=(ds===today?' today':'');
+    if(!es){grid+='<span class="cd'+cls+'"><b>'+d+'</b></span>';continue;}
+    const dia=es.some(e=>e.diary);nT++;if(dia)nD++;
+    const l=!m.has(addDay(ds,-1))||col===0,r=!m.has(addDay(ds,1))||col===6;
+    const lab=fmtDate(ds,{weekday:'long',day:'numeric',month:'long'})+' · '+es.map(e=>e.it.t.name).join(', ')+(dia?' · con diario':'');
+    grid+='<button type="button" class="cd'+(dia?' dia':'')+(l?' l':'')+(r?' r':'')+cls+(ds===S.calD?' sel':'')+'" data-cd="'+ds+'" aria-label="'+esc(lab)+'" title="'+esc(lab)+'"><b>'+d+'</b></button>';}
+  // l'anno a colpo d'occhio: una barretta per mese
+  let yr='';for(let k=1;k<=12;k++){const mm=y+'-'+String(k).padStart(2,'0');const md=dates.filter(d=>d.slice(0,7)===mm);const dd=md.some(d=>m.get(d).some(e=>e.diary));
+    const nm=new Date(y,k-1,15).toLocaleDateString('it-IT',{month:'short'}).replace('.','');
+    yr+='<button type="button" class="cym'+(md.length?(dd?' dia':' has'):'')+(mm===M?' on':'')+'" data-cm="'+mm+'"'+(mm<lo||mm>hi?' disabled':'')+' title="'+esc(nm+' '+y+(md.length?' · '+md.length+(md.length===1?' giorno':' giorni')+' in viaggio':''))+'">'+esc(nm)+'<i></i></button>';}
+  const yd=dates.filter(d=>d.slice(0,4)===String(y));const ydd=yd.filter(d=>m.get(d).some(e=>e.diary)).length;
+  const tsIdx=new Map(A.ts.map((t,i)=>[t.id,i]));
+  const inMonth=A.ranges.filter(r=>{const a=A.items[A.dayKs[r.start]].date,b=A.items[A.dayKs[r.end]].date;return a.slice(0,7)<=M&&b.slice(0,7)>=M;});
+  let h='<div class="cal"><div class="calhead"><button type="button" id="cPrev" aria-label="Mese precedente"'+(M<=lo?' disabled':'')+'>‹</button><h2>'+esc(title.charAt(0).toUpperCase()+title.slice(1))+'</h2><button type="button" id="cNext" aria-label="Mese successivo"'+(M>=hi?' disabled':'')+'>›</button></div>'
+    +'<div class="calsum">'+(nT?nT+(nT===1?' giorno':' giorni')+' in viaggio · '+nD+' con il diario':'Nessun viaggio in questo mese')+'</div>'
+    +'<div class="calyh">Nel '+y+': '+yd.length+(yd.length===1?' giorno':' giorni')+' in viaggio, '+ydd+' con il diario</div>'
+    +'<div class="calyear">'+yr+'</div><div class="calgrid">'+grid+'</div>'
+    +'<div class="callegend"><span><i class="l1"></i>giorno con diario</span><span><i class="l2"></i>in viaggio</span><span><i class="l3"></i>oggi</span></div>';
+  if(inMonth.length)h+='<div class="caltrips">'+inMonth.map(r=>{const a=A.items[A.dayKs[r.start]].date,b=A.items[A.dayKs[r.end]].date;
+    return '<button type="button" class="ctrip" data-ct="'+esc(r.t.id)+'"><i style="background:'+GRADS[tsIdx.get(r.t.id)%GRADS.length]+'"></i><span>'+esc(r.t.name)+'</span><small>'+esc(fmtDate(a)+(a!==b?' – '+fmtDate(b):''))+'</small></button>';}).join('')+'</div>';
+  h+='</div>';
+  const es=S.calD?m.get(S.calD):null;
+  if(es){h+='<div class="cdet">'+es.map(e=>{const it=e.it;
+      const body=it.kind==='start'?e.ss.map(s=>'<div class="cs"><h4>'+esc(s.title)+'</h4>'+(hasNote(s)?'<p>'+esc(s.note)+'</p>':'<p class="nodia">Nessuna nota di diario per questa tappa.</p>')+'</div>').join(''):'<div class="cs"><p class="nodia">Nessuna nota di diario per questo giorno.</p></div>';
+      return '<article class="ce"><div class="ck">'+esc(it.t.name)+' · giorno '+(it.i+1)+' di '+it.total+'</div><h3>'+esc(fmtDate(it.date,{weekday:'long',day:'numeric',month:'long',year:'numeric'}))+'</h3><p class="where">'+esc(calWhere(e))+'</p>'+body
+        +'<div class="actions"><button type="button" class="btn sm route" data-open="'+e.di+'">Apri nei giorni</button>'+(it.s?'<button type="button" class="btn sm" data-cmap="'+esc(it.s.id)+'">Sulla mappa</button>':'')+'</div></article>';}).join('')+'</div>';}
+  else h+='<p class="calhint">Tocca un giorno colorato per vedere dove eravate.</p>';
+  c.innerHTML=h;
+  const go=n=>{S.calM=addMonth(S.calM,n);S.calD=null;renderCal(c);};
+  $('#cPrev').onclick=()=>go(-1);$('#cNext').onclick=()=>go(1);
+  c.querySelectorAll('[data-cm]').forEach(b=>b.onclick=()=>{S.calM=b.dataset.cm;S.calD=null;renderCal(c);});
+  const pick=(ds,tid)=>{S.calD=ds;tid=tid||m.get(ds)[0].it.t.id;
+    if(tid!==S.tripId){setTrip(tid);const car=$('#tripcar'),cc=car&&car.querySelector('.hero[data-trip="'+CSS.escape(tid)+'"]');if(cc)car.scrollLeft=cc.offsetLeft-(car.clientWidth-cc.clientWidth)/2;}
+    renderCal(c);const d=$('.cdet');if(d&&d.getBoundingClientRect().top>innerHeight-120)d.scrollIntoView({behavior:'smooth',block:'nearest'});};
+  c.querySelectorAll('[data-cd]').forEach(b=>b.onclick=()=>pick(b.dataset.cd));
+  c.querySelectorAll('[data-ct]').forEach(b=>b.onclick=()=>{const md=dates.filter(d=>d.slice(0,7)===M&&m.get(d).some(e=>e.it.t.id===b.dataset.ct));if(md.length)pick(md.find(d=>m.get(d).some(e=>e.diary&&e.it.t.id===b.dataset.ct))||md[0],b.dataset.ct);});
+  c.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>{S.dayWant=+b.dataset.open;setTab('days');});
+  c.querySelectorAll('[data-cmap]').forEach(b=>b.onclick=()=>{const s=S.stops.find(x=>x.id===b.dataset.cmap);if(!s)return;S.tripId=s.tripId;S.sel=s.id;S.tab='map';S.view=null;S.userView=false;renderAll();focusStop(s);toContent();});
 }
 function renderStory(c){
   const chaps=[];let h='<div class="book">';
