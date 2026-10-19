@@ -49,10 +49,22 @@ drop policy if exists "solo i membri" on public.stops;
 create policy "solo i membri" on public.stops
   for all to authenticated using (public.is_member()) with check (public.is_member());
 
+-- liste condivise (la checklist di partenza)
+create table if not exists public.lists (
+  id text primary key,
+  data jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now()
+);
+alter table public.lists enable row level security;
+drop policy if exists "solo i membri" on public.lists;
+create policy "solo i membri" on public.lists
+  for all to authenticated using (public.is_member()) with check (public.is_member());
+
 -- aggiornamenti in tempo reale tra i vostri due telefoni
 do $$ begin
   begin alter publication supabase_realtime add table public.trips; exception when others then null; end;
   begin alter publication supabase_realtime add table public.stops; exception when others then null; end;
+  begin alter publication supabase_realtime add table public.lists; exception when others then null; end;
 end $$;
 
 -- 3) Spazio privato per le foto

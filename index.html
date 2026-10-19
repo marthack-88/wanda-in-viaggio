@@ -573,6 +573,37 @@ button.cd.l.r::before{border-radius:99px}
 .ce .nodia{color:var(--muted);font-style:italic}
 .calhint{text-align:center;color:var(--muted);margin:14px 0 0;font-size:14px}
 @media (max-width:420px){.cd{height:40px;font-size:14px}.cd b{width:32px;height:32px}.cal{padding:14px 10px 12px}.cym{font-size:10px}}
+/* ===== foto in blocco e checklist ===== */
+.bhelp{color:var(--muted);font-size:14px;margin:-6px 0 14px}
+.bulksheet,.checksheet{width:min(620px,100%)}
+.bsum{font-size:14px;margin:0 0 10px}.bsum .warn{color:#B6345F;font-weight:600}
+.blist{display:grid;gap:8px;margin-bottom:6px}
+.brow{display:grid;grid-template-columns:64px minmax(0,1fr);gap:12px;align-items:center;padding:8px;border:1px solid var(--line);border-radius:14px;background:#fff}
+.brow.off{background:#FBF7F9;border-style:dashed}.brow.off img{opacity:.55}
+.brow img{width:64px;height:64px;object-fit:cover;border-radius:10px;background:var(--soft)}
+.binfo{display:flex;flex-direction:column;gap:3px;min-width:0}
+.binfo b{font-size:13.5px}.binfo small{font-size:12px;color:var(--muted)}
+.binfo select{margin-top:3px;width:100%;min-width:0;border:1px solid var(--line);border-radius:9px;padding:6px 8px;background:var(--bg);font-size:13px}
+.bprog{display:grid;gap:6px;padding:10px 12px;border-radius:14px;background:rgba(108,74,182,.08);font-weight:600;font-size:14px;margin-bottom:8px}
+.bprog i,.kprog i{display:block;height:8px;border-radius:99px;background:rgba(108,74,182,.15);overflow:hidden}
+.bprog i b,.kprog i b{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,#FF8A5B,#FF4F7B);transition:width .3s}
+.bprog.done{background:#E3F6E8;color:#24804A}
+.galbar{display:flex;justify-content:flex-end;margin:0 0 12px}
+.kprog{display:grid;gap:8px;margin:-4px 0 16px;font-size:14px;color:var(--muted)}.kprog b{color:var(--ink);font-size:18px}
+.kcat{margin-bottom:14px}
+.kcat h3{font-size:16px;display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.kcat h3 small{font:500 11px var(--font-mono);color:var(--muted)}
+.kcat ul{list-style:none;margin:0;padding:0}
+.kcat li{display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--line)}
+.kcat li label{flex:1;display:flex;align-items:center;gap:12px;padding:10px 2px;cursor:pointer;min-width:0}
+.kcat li input{width:22px;height:22px;flex:none;accent-color:#FF4F7B}
+.kcat li.ok span{text-decoration:line-through;color:var(--muted)}
+.kx{border:0;background:none;color:var(--muted);font-size:20px;line-height:1;cursor:pointer;padding:4px 8px;border-radius:8px;flex:none}
+.kx.arm,.btn.arm{color:var(--danger)}
+.kcat h3 .kx{margin-left:auto;font-size:13px}
+.kadd{display:flex;gap:8px;margin-top:8px}
+.kadd input{flex:1;min-width:0;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:7px 10px}
+.kaddcat{margin:4px 0 12px}
 </style>
 </head>
 <body>
@@ -663,6 +694,8 @@ button.cd.l.r::before{border-radius:99px}
         <div class="menu" id="topMenu">
           <button class="btn menubtn" id="btnMenu" type="button" aria-label="Altre azioni" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></button>
           <div class="menulist" id="menuList" role="menu" hidden>
+            <button type="button" role="menuitem" id="btnCheck">Checklist partenza</button>
+            <button type="button" role="menuitem" id="btnBulk">Foto in blocco</button>
             <button type="button" role="menuitem" id="btnTripEdit">Modifica viaggio</button>
             <button type="button" role="menuitem" id="btnBackup" title="Scarica una copia di viaggi e note">Scarica backup</button>
             <button type="button" role="menuitem" id="btnInstall" hidden>Installa l'app</button>
@@ -710,6 +743,8 @@ button.cd.l.r::before{border-radius:99px}
 <div class="overlay hide" id="ovStop"><form class="sheet" id="fStop" autocomplete="off"></form></div>
 <div class="overlay hide" id="ovTrip"><form class="sheet" id="fTrip" autocomplete="off"></form></div>
 <div class="overlay hide" id="ovPwd"><form class="sheet" id="fPwd"></form></div>
+<div class="overlay hide" id="ovBulk"><div class="sheet bulksheet" id="fBulk"></div></div>
+<div class="overlay hide" id="ovCheck"><div class="sheet checksheet" id="fCheck"></div></div>
 <div class="overlay hide lb" id="ovLb"></div>
 <datalist id="gaz"></datalist>
 
@@ -746,7 +781,7 @@ const fmtLong=d=>fmtDate(d,{day:'numeric',month:'long',year:'numeric'});
 function km(a,b){const R=6371,dl=(b.lat-a.lat)*D2R,dn=(b.lon-a.lon)*D2R;const x=Math.sin(dl/2)**2+Math.cos(a.lat*D2R)*Math.cos(b.lat*D2R)*Math.sin(dn/2)**2;return 2*R*Math.asin(Math.sqrt(x));}
 const nf=n=>Math.round(n).toLocaleString('it-IT');
 
-const S={calYear:null,trips:[],stops:[],tripId:null,tab:'stops',sel:null,loading:true,db:null,assets:null,canWrite:true,mode:'mem',view:null,userView:false,pick:false,dragged:false};
+const S={calYear:null,trips:[],stops:[],lists:[],tripId:null,tab:'stops',sel:null,loading:true,db:null,assets:null,canWrite:true,mode:'mem',view:null,userView:false,pick:false,dragged:false};
 try{S.tripId=localStorage.getItem('van.trip')}catch(e){}
 
 /* ---------- dati ---------- */
@@ -757,12 +792,12 @@ function removeLocal(coll,id){S[coll]=S[coll].filter(x=>x.id!==id);saveCache();}
 // copia locale del diario, per leggerlo anche senza rete (solo su questo dispositivo)
 const CACHE_KEY='wanda.cache';S.urlT={};let cacheT=null;
 function saveCache(){if(S.offline||!S.email)return;clearTimeout(cacheT);cacheT=setTimeout(()=>{
-  try{localStorage.setItem(CACHE_KEY,JSON.stringify({email:S.email,at:Date.now(),trips:S.trips,stops:S.stops,urls:S.urls,urlT:S.urlT}));}catch(e){}},400);}
+  try{localStorage.setItem(CACHE_KEY,JSON.stringify({email:S.email,at:Date.now(),trips:S.trips,stops:S.stops,lists:S.lists,urls:S.urls,urlT:S.urlT}));}catch(e){}},400);}
 function readCache(email){try{const c=JSON.parse(localStorage.getItem(CACHE_KEY)||'null');return c&&(!email||c.email===email)?c:null;}catch(e){return null;}}
 function clearCache(){try{localStorage.removeItem(CACHE_KEY)}catch(e){}if(window.caches)caches.delete('wanda-foto').catch(()=>{});}
 function goOffline(email){
   const c=readCache(email);if(!c)return false;
-  S.offline=true;S.canWrite=false;S.email=c.email;S.trips=c.trips||[];S.stops=c.stops||[];
+  S.offline=true;S.canWrite=false;S.email=c.email;S.trips=c.trips||[];S.stops=c.stops||[];S.lists=c.lists||[];
   const lim=Date.now()-6.5*864e5;Object.keys(c.urls||{}).forEach(k=>{if(((c.urlT||{})[k]||0)>lim)S.urls[k]=c.urls[k];});
   S.loading=false;lockUI(false);
   $('#notice').innerHTML='<p class="notice offline">Sei senza rete: stai vedendo la copia salvata il '+esc(new Date(c.at).toLocaleString('it-IT',{day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'}))+'. Per modificare serve la connessione.</p>';
@@ -959,8 +994,10 @@ function renderContent(){
   if(!st.length){c.innerHTML=`<div class="empty"><h2>Nessuna tappa</h2><p>Aggiungi la prima sosta del viaggio: puoi scegliere il luogo da un elenco, incollare le coordinate o toccare la mappa.</p>${S.canWrite?'<button class="btn route" id="emStop" type="button">Aggiungi la prima tappa</button>':''}</div>`;const b=$('#emStop');if(b)b.onclick=()=>openStop(null);return;}
   if(S.tab==='photos'){
     const items=[];st.forEach(s=>(s.photos||[]).forEach((p,i)=>items.push({s,p,i})));
-    if(!items.length){c.innerHTML='<div class="empty"><h2>Nessuna foto</h2><p>Tocca la matita su una tappa e aggiungi le foto: qui compaiono tutte insieme.</p></div>';return;}
-    c.innerHTML='<div class="gallery">'+items.map((x,k)=>`<figure data-k="${k}"><img loading="lazy" src="${esc(photoUrl(x.p))}" alt="${esc(x.s.title)}"><figcaption>${esc(x.s.title)}</figcaption></figure>`).join('')+'</div>';
+    const bb=S.canWrite?'<button class="btn route" type="button" data-bulk>Aggiungi foto in blocco</button>':'';
+    if(!items.length){c.innerHTML='<div class="empty"><h2>Nessuna foto</h2><p>Scegli tutte le foto di un viaggio in una volta: finiscono da sole nel giorno giusto, grazie alla data dello scatto. Oppure tocca la matita su una tappa.</p>'+bb+'</div>';const x=c.querySelector('[data-bulk]');if(x)x.onclick=openBulk;return;}
+    c.innerHTML=(bb?'<div class="galbar">'+bb.replace('btn route','btn route sm')+'</div>':'')+'<div class="gallery">'+items.map((x,k)=>`<figure data-k="${k}"><img loading="lazy" src="${esc(photoUrl(x.p))}" alt="${esc(x.s.title)}"><figcaption>${esc(x.s.title)}</figcaption></figure>`).join('')+'</div>';
+    {const x=c.querySelector('[data-bulk]');if(x)x.onclick=openBulk;}
     c.querySelectorAll('figure').forEach(f=>f.onclick=()=>openLb(items.map(x=>({src:photoUrl(x.p),cap:x.s.title+' · '+fmtDate(x.s.date),sid:x.s.id,pid:x.p.id})),+f.dataset.k));
     return;
   }
@@ -1414,7 +1451,148 @@ document.addEventListener('keydown',e=>{
   if(lb){if(e.key==='Escape')closeLb();else if(e.key==='ArrowRight'){lb.i=(lb.i+1)%lb.list.length;drawLb();}else if(e.key==='ArrowLeft'){lb.i=(lb.i+lb.list.length-1)%lb.list.length;drawLb();}return;}
   if(e.key==='Escape'&&!$('#menuList').hidden){closeMenu();$('#btnMenu').focus();return;}
   if(e.key==='Escape'&&!$('#ovAll').classList.contains('hide')){$('#ovAll').classList.add('hide');return;}
+  if(e.key==='Escape'&&!$('#ovBulk').classList.contains('hide')){closeBulk();return;}
+  if(e.key==='Escape'&&!$('#ovCheck').classList.contains('hide')){$('#ovCheck').classList.add('hide');return;}
   if(e.key==='Escape'){if(S.pick)finishPick(null);else if(!$('#ovStop').classList.contains('hide'))closeStop(true);else{$('#ovTrip').classList.add('hide');$('#ovPwd').classList.add('hide');}}});
+
+/* ---------- foto in blocco: ogni foto finisce da sola nel giorno (e nella tappa) dello scatto ---------- */
+// data e posizione dello scatto dai dati EXIF delle foto JPEG (le foto senza EXIF usano la data del file)
+async function exifOf(file){
+  try{const b=new DataView(await file.slice(0,262144).arrayBuffer());
+    if(b.byteLength<4||b.getUint16(0)!==0xFFD8)return null;let o=2;
+    while(o+10<b.byteLength){const m=b.getUint16(o);if((m&0xFF00)!==0xFF00||m===0xFFDA)break;
+      if(m===0xFFE1&&b.getUint32(o+4)===0x45786966)return readTiff(b,o+10);o+=2+b.getUint16(o+2);}
+  }catch(e){}
+  return null;
+}
+function readTiff(b,t){
+  const le=b.getUint16(t)===0x4949,u16=o=>b.getUint16(t+o,le),u32=o=>b.getUint32(t+o,le);
+  const ifd=o=>{const r={},n=u16(o);for(let i=0;i<n;i++){const e=o+2+i*12;r[u16(e)]={n:u32(e+4),v:e+8};}return r;};
+  const str=x=>{const p=x.n>4?u32(x.v):x.v;let r='';for(let i=0;i<x.n-1;i++)r+=String.fromCharCode(b.getUint8(t+p+i));return r;};
+  const dms=x=>{const p=u32(x.v),q=i=>u32(p+i*8)/(u32(p+i*8+4)||1);return q(0)+q(1)/60+q(2)/3600;};
+  const out={};const i0=ifd(u32(4));
+  if(i0[0x8769]){const ex=ifd(u32(i0[0x8769].v));const d=ex[0x9003]||ex[0x9004];if(d)out.dt=str(d);}
+  if(!out.dt&&i0[0x132])out.dt=str(i0[0x132]);
+  if(i0[0x8825]){const g=ifd(u32(i0[0x8825].v));
+    if(g[2]&&g[4]){let la=dms(g[2]),lo=dms(g[4]);if(g[1]&&str(g[1])==='S')la=-la;if(g[3]&&str(g[3])==='W')lo=-lo;if(isFinite(la)&&isFinite(lo)&&(la||lo)){out.lat=la;out.lon=lo;}}}
+  const m=/^(\d{4}):(\d\d):(\d\d) (\d\d):(\d\d)/.exec(out.dt||'');out.dt=m?m[1]+'-'+m[2]+'-'+m[3]+'T'+m[4]+':'+m[5]:null;
+  return out;
+}
+// tappa per una foto: quella del giorno dello scatto (la più vicina, se la foto ha la posizione);
+// nei giorni senza tappa, quella dove si è dormito
+function bulkTarget(it,m){
+  const es=m.get(it.date);if(!es)return null;const c=[];
+  es.forEach(e=>{if(e.it.kind==='start')c.push(...e.ss);else if(e.it.s)c.push(e.it.s);});
+  if(!c.length)return null;if(it.lat==null)return c[c.length-1].id;
+  return c.reduce((a,s)=>km(it,s)<km(it,a)?s:a).id;
+}
+let bulk=null;
+function openBulk(){
+  if(!S.canWrite||!S.assets)return;closeMenu();bulk={items:[],busy:false};
+  const f=$('#fBulk');
+  f.innerHTML='<h2>Foto in blocco</h2><p class="bhelp">Scegli tutte le foto che vuoi, anche di viaggi diversi: le metto da sole nel giorno giusto usando la data dello scatto (e la posizione, se la foto ce l\'ha). Prima di caricarle puoi controllare e cambiare.</p>'
+    +'<input type="file" id="bFiles" accept="image/*" multiple hidden><div id="bList"><button type="button" class="btn route" id="bPick">Scegli le foto</button></div><p class="err" id="bErr"></p>'
+    +'<div class="foot"><div class="grp"><button type="button" class="btn" id="bMore" hidden>Altre foto</button></div><div class="grp"><button type="button" class="btn ghost" id="bClose">Chiudi</button><button type="button" class="btn primary" id="bGo" hidden>Carica</button></div></div>';
+  $('#ovBulk').classList.remove('hide');
+  const pick=()=>$('#bFiles').click();$('#bPick').onclick=pick;$('#bMore').onclick=pick;$('#bClose').onclick=closeBulk;
+  $('#bFiles').onchange=async e=>{const files=[...e.target.files];e.target.value='';if(files.length)await addBulk(files);};
+  $('#bGo').onclick=runBulk;
+}
+function closeBulk(){if(bulk&&bulk.busy)return;if(bulk)bulk.items.forEach(i=>URL.revokeObjectURL(i.url));bulk=null;$('#ovBulk').classList.add('hide');renderAll();}
+async function addBulk(files){
+  const {m}=calData();const had=new Set();S.stops.forEach(s=>(s.photos||[]).forEach(p=>{if(p.src)had.add(p.src);}));
+  const seen=new Set(bulk.items.map(i=>i.key));$('#bList').innerHTML='<p class="bhelp">Leggo le date delle foto…</p>';
+  for(const file of files){const key=file.name+'|'+file.size;if(seen.has(key))continue;seen.add(key);
+    const ex=await exifOf(file)||{};let dt=ex.dt,from='exif';
+    if(!dt){const d=new Date(file.lastModified||Date.now());dt=new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16);from='file';}
+    const it={file,key,url:URL.createObjectURL(file),dt,date:dt.slice(0,10),lat:ex.lat,lon:ex.lon,from,dup:had.has(key)};
+    it.target=it.dup?null:bulkTarget(it,m);bulk.items.push(it);}
+  bulk.items.sort((a,b)=>a.dt.localeCompare(b.dt));drawBulk();
+}
+function drawBulk(){
+  const its=bulk.items,go=its.filter(i=>i.target),nStops=new Set(go.map(i=>i.target)).size,none=its.filter(i=>!i.target&&!i.dup).length,dup=its.filter(i=>i.dup).length;
+  let opts='<option value="">Non caricare</option>';
+  [...tripsByDate()].reverse().forEach(t=>{const st=stopsOf(t.id);if(!st.length)return;
+    opts+='<optgroup label="'+esc(t.name)+'">'+st.map(s=>'<option value="'+esc(s.id)+'">'+esc(fmtDate(s.date)+' · '+s.title)+'</option>').join('')+'</optgroup>';});
+  let h='<div class="bsum"><b>'+its.length+(its.length===1?' foto':' foto')+'</b> · '+go.length+' da caricare in '+nStops+(nStops===1?' tappa':' tappe')
+    +(none?' · <span class="warn">'+none+' senza un giorno di viaggio</span>':'')+(dup?' · '+dup+' già nel diario':'')+'</div><div class="blist">';
+  its.forEach((it,k)=>{const note=[it.lat!=null?'con posizione':'',it.from==='file'?'data del file, controlla':'',it.dup?'già caricata':(!it.target?'nessun viaggio in questa data':'')].filter(Boolean).join(' · ');
+    h+='<div class="brow'+(it.target?'':' off')+'"><img src="'+esc(it.url)+'" alt="" loading="lazy"><div class="binfo"><b>'+esc(fmtDate(it.date,{weekday:'short',day:'numeric',month:'short',year:'numeric'}))+' · '+esc(it.dt.slice(11,16))+'</b>'+(note?'<small>'+esc(note)+'</small>':'')+'<select data-bi="'+k+'" aria-label="Tappa per questa foto">'+opts+'</select></div></div>';});
+  h+='</div>';$('#bList').innerHTML=h;
+  $('#bList').querySelectorAll('[data-bi]').forEach(sel=>{const it=its[+sel.dataset.bi];sel.value=it.target||'';sel.onchange=()=>{it.target=sel.value||null;drawBulk();};});
+  const g=$('#bGo');g.hidden=!go.length;g.textContent='Carica '+go.length+(go.length===1?' foto':' foto');$('#bMore').hidden=false;
+}
+async function runBulk(){
+  if(!bulk||bulk.busy)return;const go=bulk.items.filter(i=>i.target);if(!go.length)return;
+  bulk.busy=true;const err=$('#bErr');err.textContent='';['#bGo','#bMore','#bClose'].forEach(x=>$(x).disabled=true);
+  $('#bList').querySelectorAll('select').forEach(x=>x.disabled=true);
+  const groups=new Map();go.forEach(i=>{if(!groups.has(i.target))groups.set(i.target,[]);groups.get(i.target).push(i);});
+  let n=0,ok=0,last='';const total=go.length;
+  const bar=document.createElement('div');bar.className='bprog';bar.innerHTML='<span></span><i><b></b></i>';$('#bList').prepend(bar);
+  const prog=()=>{bar.querySelector('span').textContent='Carico '+Math.min(n,total)+' di '+total+'…';bar.querySelector('b').style.width=Math.round(n/total*100)+'%';};
+  // una tappa alla volta: le foto caricate vengono salvate subito nella loro tappa
+  for(const [sid,list] of groups){const added=[];
+    for(const it of list){n++;prog();
+      try{const blob=await shrink(it.file);const r=await S.assets.upload(blob);added.push({id:r.id,src:it.key,t:it.dt});}
+      catch(x){last=x&&(x.message||x.code)||'errore';}}
+    if(!added.length)continue;
+    const cur=S.stops.find(x=>x.id===sid);
+    if(cur){const data=Object.assign({},cur);delete data.id;data.photos=[...(cur.photos||[]),...added];
+      try{await store.put('stops',sid,data);ok+=added.length;continue;}catch(x){last=x&&(x.message||x.code)||'errore';}}
+    for(const a of added){try{await S.assets.delete(a.id)}catch(x){}}
+  }
+  bulk.busy=false;$('#bClose').disabled=false;
+  bar.querySelector('span').textContent=ok===total?'Fatto: '+ok+(ok===1?' foto caricata':' foto caricate')+' in '+groups.size+(groups.size===1?' tappa':' tappe')+'.':'Caricate '+ok+' foto su '+total+'.';
+  bar.querySelector('b').style.width='100%';bar.classList.add('done');
+  if(ok<total)err.textContent='Alcune foto non sono state caricate: '+last+'. Puoi riprovare con "Altre foto".';
+  $('#bGo').hidden=true;$('#bMore').hidden=false;$('#bMore').disabled=false;
+  bulk.items.forEach(i=>URL.revokeObjectURL(i.url));bulk.items=[];
+}
+
+/* ---------- checklist di partenza: condivisa, da spuntare prima di ogni uscita ---------- */
+const CHECK_ID='partenza';
+const CHECK_DEF=[
+  ['Wanda',['Acqua pulita piena','Acque grigie svuotate','Cassetta WC vuota e con il liquido','Gasolio sopra 1/4 (serve anche al Truma)','Batteria dei servizi carica','Pressione delle gomme','Frigo acceso','Cavo 230V e adattatori','Cunei livellanti']],
+  ['Documenti',['Patente e libretto di Wanda','Assicurazione attiva (anche quella di Bunny)','Campeggio o area sosta controllati','Carte e un po\' di contanti']],
+  ['Sport',['Kite, barra e trapezio','Twintip e surfino','Wing, tavola e foil','Mute e calzari','Sup, pompa e 2 remi','Racchettoni e pallina','Biciclette e lucchetto']],
+  ['Casa e cucina',['Spesa base, caffè e acqua','Piumino d\'oca di Gallina','Cappello di lana e pile','Asciugamani e teli mare','Carte da burraco','Caricatori e power bank']],
+  ['Prima di partire',['Oblò e finestre chiusi','Gradino e tendalino rientrati','Pensili chiusi e cose fissate','Gas della cucina chiuso']]
+];
+const checkNew=()=>({cats:CHECK_DEF.map(([n,items])=>({n,items:items.map(t=>({id:uid(),t,ok:false}))}))});
+let checkT=null,checkEdit=false;
+const checkData=()=>{const r=S.lists.find(x=>x.id===CHECK_ID);return r&&r.cats?r:null;};
+function checkSave(d){
+  const data={cats:d.cats,at:Date.now()};upsertLocal('lists',CHECK_ID,data);
+  clearTimeout(checkT);checkT=setTimeout(async()=>{
+    try{await store.put('lists',CHECK_ID,data);$('#kErr').textContent='';}catch(x){const e=$('#kErr');if(e)e.textContent='Non riesco a salvare: '+(x.message||x.code||'errore');}
+    checkT=null;},500);
+}
+function openCheck(){closeMenu();checkEdit=false;$('#ovCheck').classList.remove('hide');drawCheck();}
+function drawCheck(){
+  const ov=$('#ovCheck');if(!ov||ov.classList.contains('hide'))return;
+  const d=checkData()||checkNew(),w=S.canWrite;
+  const all=d.cats.flatMap(c=>c.items),done=all.filter(i=>i.ok).length;
+  let h='<h2>Checklist partenza</h2><div class="kprog"><div><b>'+done+'</b> / '+all.length+' '+(done===all.length&&all.length?'· tutto pronto, buon viaggio!':'pronti')+'</div><i><b style="width:'+(all.length?Math.round(done/all.length*100):0)+'%"></b></i></div>';
+  if(!w)h+='<p class="bhelp">Senza rete la checklist si può solo leggere.</p>';
+  d.cats.forEach((c,ci)=>{const cd=c.items.filter(i=>i.ok).length;
+    h+='<section class="kcat"><h3>'+esc(c.n)+' <small>'+cd+' / '+c.items.length+'</small>'+(checkEdit?'<button type="button" class="kx" data-kdc="'+ci+'" aria-label="Elimina la sezione '+esc(c.n)+'">×</button>':'')+'</h3><ul>'
+      +c.items.map(i=>'<li class="'+(i.ok?'ok':'')+'"><label><input type="checkbox" data-ki="'+esc(i.id)+'"'+(i.ok?' checked':'')+(w?'':' disabled')+'><span>'+esc(i.t)+'</span></label>'+(checkEdit?'<button type="button" class="kx" data-kd="'+esc(i.id)+'" aria-label="Elimina">×</button>':'')+'</li>').join('')+'</ul>'
+      +(checkEdit?'<div class="kadd"><input type="text" data-kn="'+ci+'" placeholder="Aggiungi a '+esc(c.n)+'…" aria-label="Nuova voce in '+esc(c.n)+'"><button type="button" class="btn sm" data-ka="'+ci+'">Aggiungi</button></div>':'')+'</section>';});
+  if(checkEdit)h+='<div class="kadd kaddcat"><input type="text" id="kNewCat" placeholder="Nuova sezione, es. Neve" aria-label="Nuova sezione"><button type="button" class="btn sm" id="kAddCat">Aggiungi sezione</button></div>';
+  h+='<p class="err" id="kErr"></p><div class="foot"><div class="grp">'+(w?'<button type="button" class="btn" id="kEdit">'+(checkEdit?'Fine modifiche':'Modifica elenco')+'</button><button type="button" class="btn" id="kReset"'+(done?'':' disabled')+'>Togli le spunte</button>':'')+'</div><div class="grp"><button type="button" class="btn primary" id="kClose">Chiudi</button></div></div>';
+  const f=$('#fCheck');const y=f.scrollTop;f.innerHTML=h;f.scrollTop=y;
+  const cur=()=>JSON.parse(JSON.stringify(checkData()||d));
+  f.querySelectorAll('[data-ki]').forEach(x=>x.onchange=()=>{const n=cur();n.cats.forEach(c=>c.items.forEach(i=>{if(i.id===x.dataset.ki)i.ok=x.checked;}));checkSave(n);drawCheck();});
+  f.querySelectorAll('[data-kd]').forEach(x=>x.onclick=()=>{const n=cur();n.cats.forEach(c=>{c.items=c.items.filter(i=>i.id!==x.dataset.kd);});checkSave(n);drawCheck();});
+  f.querySelectorAll('[data-kdc]').forEach(x=>x.onclick=()=>{const n=cur(),ci=+x.dataset.kdc;if(n.cats[ci].items.length&&!x.classList.contains('arm')){x.classList.add('arm');x.textContent='Elimina?';return;}n.cats.splice(ci,1);checkSave(n);drawCheck();});
+  const add=ci=>{const inp=f.querySelector('[data-kn="'+ci+'"]');const t=inp.value.trim();if(!t){inp.focus();return;}const n=cur();n.cats[ci].items.push({id:uid(),t,ok:false});checkSave(n);drawCheck();const ni=$('#fCheck [data-kn="'+ci+'"]');if(ni)ni.focus();};
+  f.querySelectorAll('[data-ka]').forEach(x=>x.onclick=()=>add(+x.dataset.ka));
+  f.querySelectorAll('[data-kn]').forEach(x=>x.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();add(+x.dataset.kn);}});
+  const nc=$('#kAddCat');if(nc){const go=()=>{const t=$('#kNewCat').value.trim();if(!t)return;const n=cur();n.cats.push({n:t,items:[]});checkSave(n);drawCheck();};nc.onclick=go;$('#kNewCat').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();go();}};}
+  const ed=$('#kEdit');if(ed)ed.onclick=()=>{checkEdit=!checkEdit;drawCheck();};
+  const rs=$('#kReset');if(rs)rs.onclick=()=>{if(!rs.classList.contains('arm')){rs.classList.add('arm');rs.textContent='Conferma: togli tutte';return;}const n=cur();n.cats.forEach(c=>c.items.forEach(i=>{i.ok=false;}));checkSave(n);drawCheck();};
+  $('#kClose').onclick=()=>ov.classList.add('hide');
+}
 
 /* ---------- esempio ---------- */
 async function loadDemo(){
@@ -1503,14 +1681,16 @@ async function startApp(session){
   if(mem.error&&!mem.data){if(goOffline(email))return;started=false;showOfflineEmpty();return;}
   if(!mem.data){started=false;await sb.auth.signOut();showLogin('L’email '+email+' non è tra quelle autorizzate a entrare nel diario.');return;}
   S.loading=true;renderAll();
-  const [t,s]=await Promise.all([sb.from('trips').select('id,data'),sb.from('stops').select('id,data')]);
+  const [t,s,l]=await Promise.all([sb.from('trips').select('id,data'),sb.from('stops').select('id,data'),sb.from('lists').select('id,data')]);
   if((t.error||s.error)&&goOffline(email))return;
   if(t.error||s.error){$('#notice').innerHTML='<p class="notice">Non riesco a leggere i dati: '+esc((t.error||s.error).message)+'</p>';}
   S.trips=(t.data||[]).map(r=>Object.assign({id:r.id},r.data));S.stops=(s.data||[]).map(r=>Object.assign({id:r.id},r.data));
+  S.lists=l&&!l.error?(l.data||[]).map(r=>Object.assign({id:r.id},r.data)):[];
   S.loading=false;renderAll();saveCache();signPhotos();setTimeout(persistLegs,4000);
   let tmo=null;const later=()=>{clearTimeout(tmo);tmo=setTimeout(()=>{renderAll();signPhotos();},120);};
   sb.channel('wanda').on('postgres_changes',{event:'*',schema:'public',table:'trips'},p=>{if(p.eventType==='DELETE')removeLocal('trips',p.old.id);else upsertLocal('trips',p.new.id,p.new.data);later();})
-    .on('postgres_changes',{event:'*',schema:'public',table:'stops'},p=>{if(p.eventType==='DELETE')removeLocal('stops',p.old.id);else upsertLocal('stops',p.new.id,p.new.data);later();}).subscribe();
+    .on('postgres_changes',{event:'*',schema:'public',table:'stops'},p=>{if(p.eventType==='DELETE')removeLocal('stops',p.old.id);else upsertLocal('stops',p.new.id,p.new.data);later();})
+    .on('postgres_changes',{event:'*',schema:'public',table:'lists'},p=>{if(p.eventType==='DELETE')removeLocal('lists',p.old.id);else if(!checkT)upsertLocal('lists',p.new.id,p.new.data);drawCheck();}).subscribe();
 }
 function showOfflineEmpty(){
   lockUI(true);S.loading=false;
@@ -1545,6 +1725,7 @@ mapEvents();initMap();
   sb=window.supabase.createClient(cfg.supabaseUrl,cfg.supabaseAnonKey);
   $('#btnOut').onclick=async()=>{clearCache();try{await sb.auth.signOut();}catch(e){}location.reload();};
   $('#btnBackup').onclick=backup;
+  $('#btnBulk').onclick=openBulk;$('#btnCheck').onclick=openCheck;
   $('#btnPwd').onclick=openPassword;
   sb.auth.onAuthStateChange((ev,session)=>{if(ev==='PASSWORD_RECOVERY')S.recovering=true;if(!session)return;
     if(S.recovering)setTimeout(()=>{if(!started)showSetPassword(session);},0);else startApp(session);});

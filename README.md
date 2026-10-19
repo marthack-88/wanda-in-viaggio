@@ -45,6 +45,15 @@ Dopo un paio di minuti il diario è su `https://marthack-88.github.io/wanda-in-v
 - **Calendario**: tutti i giorni con Wanda, mese per mese. I giorni con una nota di diario sono
   pieni (arancio/rosa), gli altri giorni in viaggio sono chiari. Toccando un giorno si vede dove
   eravate e la nota; "Apri nei giorni" porta a quel giorno del diario.
+- **Foto in blocco** (menu **⋯**, oppure scheda Foto): scegli tante foto insieme, anche di viaggi
+  diversi. Ognuna va da sola nella tappa del giorno dello scatto (la più vicina, se la foto ha la
+  posizione; nei giorni senza tappa, quella dove avete dormito). Prima di caricare si può cambiare
+  la tappa o scegliere "Non caricare". Le foto già caricate così vengono riconosciute e saltate.
+  Su iPhone conviene scegliere le foto dall'app File o da Foto: la data dello scatto resta, la
+  posizione a volte no (in quel caso conta solo la data).
+- **Checklist partenza** (menu **⋯**): l'elenco delle cose da controllare prima di uscire, condiviso
+  tra voi. "Modifica elenco" per aggiungere o togliere voci e sezioni, "Togli le spunte" per
+  ricominciare al viaggio dopo.
 - **Backup** (menu **⋯**) scarica un file con tutti i viaggi e le note. Fatelo ogni tanto e conservatelo.
 - Per autorizzare un'altra persona: in Supabase → SQL Editor esegui
   `insert into public.members (email) values (lower('nuova@email.it'));`
