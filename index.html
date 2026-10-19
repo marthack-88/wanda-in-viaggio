@@ -110,6 +110,7 @@ select.btn{max-width:100%;padding-right:8px}
 .tab:hover{color:var(--ink)}
 .tab[aria-selected="true"]{background:var(--panel);color:var(--ink);box-shadow:0 2px 8px -3px rgba(16,36,29,.3)}
 .tabs .spacer{flex:1}
+.tab[hidden]{display:none!important}
 
 /* tappe */
 .stops{list-style:none;margin:0;padding:0;position:relative;display:flex;flex-direction:column;gap:14px}
@@ -714,7 +715,8 @@ button.cd.l.r::before{border-radius:99px}
     <section class="tripwrap" id="tripbar" aria-label="I vostri viaggi"></section>
     <div class="tabs" role="tablist">
       <button class="tab" role="tab" id="tabStops" aria-selected="true"><svg viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg><span>Tappe</span></button>
-      <button class="tab" role="tab" id="tabDays" aria-selected="false"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg><span>Giorni</span></button>
+      <!-- vista Giorni disattivata: per riattivarla togliere "hidden" -->
+      <button class="tab" role="tab" id="tabDays" aria-selected="false" hidden><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg><span>Giorni</span></button>
       <button class="tab" role="tab" id="tabCal" aria-selected="false"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4M8 14h.01M12 14h.01M16 14h.01M8 17h.01M12 17h.01"/></svg><span>Calendario</span></button>
       <button class="tab" role="tab" id="tabStory" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M12 6.5C10 5 7 4.5 3.5 5v13.5c3.5-.5 6.5 0 8.5 1.5 2-1.5 5-2 8.5-1.5V5C17 4.5 14 5 12 6.5zM12 6.5V20"/></svg><span>Racconto</span></button>
       <button class="tab" role="tab" id="tabMap" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M9 4L3.5 6v14L9 18l6 2 5.5-2V4L15 6 9 4zM9 4v14M15 6v14"/></svg><span>Mappa</span></button>
@@ -1263,7 +1265,7 @@ function renderCal(c){
   if(es){h+='<div class="cdet">'+es.map(e=>{const it=e.it;
       const body=it.kind==='start'?e.ss.map(s=>'<div class="cs"><h4>'+esc(s.title)+'</h4>'+(hasNote(s)?'<p>'+esc(s.note)+'</p>':'<p class="nodia">Nessuna nota di diario per questa tappa.</p>')+'</div>').join(''):'<div class="cs"><p class="nodia">Nessuna nota di diario per questo giorno.</p></div>';
       return '<article class="ce"><div class="ck">'+esc(it.t.name)+' · giorno '+(it.i+1)+' di '+it.total+'</div><h3>'+esc(fmtDate(it.date,{weekday:'long',day:'numeric',month:'long',year:'numeric'}))+'</h3><p class="where">'+esc(calWhere(e))+'</p>'+body
-        +'<div class="actions"><button type="button" class="btn sm route" data-open="'+e.di+'">Apri nei giorni</button>'+(it.s?'<button type="button" class="btn sm" data-cmap="'+esc(it.s.id)+'">Sulla mappa</button>':'')+'</div></article>';}).join('')+'</div>';}
+        +(it.s?'<div class="actions"><button type="button" class="btn sm route" data-cstop="'+esc(it.s.id)+'">Apri la tappa</button><button type="button" class="btn sm" data-cmap="'+esc(it.s.id)+'">Sulla mappa</button></div>':'')+'</article>';}).join('')+'</div>';}
   else h+='<p class="calhint">Tocca un giorno colorato per vedere dove eravate.</p>';
   c.innerHTML=h;
   const go=n=>{S.calM=addMonth(S.calM,n);S.calD=null;renderCal(c);};
@@ -1274,7 +1276,7 @@ function renderCal(c){
     renderCal(c);const d=$('.cdet');if(d&&d.getBoundingClientRect().top>innerHeight-120)d.scrollIntoView({behavior:'smooth',block:'nearest'});};
   c.querySelectorAll('[data-cd]').forEach(b=>b.onclick=()=>pick(b.dataset.cd));
   c.querySelectorAll('[data-ct]').forEach(b=>b.onclick=()=>{const md=dates.filter(d=>d.slice(0,7)===M&&m.get(d).some(e=>e.it.t.id===b.dataset.ct));if(md.length)pick(md.find(d=>m.get(d).some(e=>e.diary&&e.it.t.id===b.dataset.ct))||md[0],b.dataset.ct);});
-  c.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>{S.dayWant=+b.dataset.open;setTab('days');});
+  c.querySelectorAll('[data-cstop]').forEach(b=>b.onclick=()=>{const s=S.stops.find(x=>x.id===b.dataset.cstop);if(!s)return;S.tripId=s.tripId;S.tab='stops';S.view=null;S.userView=false;renderAll();selectStop(s.id,true);});
   c.querySelectorAll('[data-cmap]').forEach(b=>b.onclick=()=>{const s=S.stops.find(x=>x.id===b.dataset.cmap);if(!s)return;S.tripId=s.tripId;S.sel=s.id;S.tab='map';S.view=null;S.userView=false;renderAll();focusStop(s);toContent();});
 }
 function renderStory(c){
